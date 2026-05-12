@@ -1,15 +1,40 @@
-# Seshmark — Agent-Aware Git History
+# Seshmark
 
-> Also known as: `git agentblame`, `agentblame`, `aiblame`
+> `git agentblame` — like `git blame`, but shows which AI (Cursor, Claude, Copilot) wrote each line.
 
-Seshmark is a zero-infrastructure, tool-agnostic convention that links AI coding agent sessions to Git commits. It enables you to:
+<!-- Replace with your actual GIF: -->
+<!-- ![Demo](docs/demo.gif) -->
 
-- **Blame** any line to see which AI session wrote it: `git agentblame src/auth.ts`
-- **Query** your AI commit history: `seshmark query --agent claude --path auth`
-- **Resume** sessions: `seshmark resume HEAD` opens the original Cursor/Claude chat
-- **Context** for orchestrators: `seshmark context HEAD --format json` reconstructs the full session
+[![Version](https://img.shields.io/github/v/release/seshmark/seshmark?color=3fb950&label=version)](https://github.com/seshmark/seshmark/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Go Version](https://img.shields.io/badge/go-%3E%3D1.21-blue)](go.mod)
 
-Works with **any** AI tool — Cursor, Claude Code, OpenCode, Codex, Copilot, Aider, and more.
+```bash
+curl -fsSL https://seshmark.dev/install | bash
+```
+
+**Try it without installing:**
+```bash
+git clone https://github.com/seshmark/demo
+cd demo
+git agentblame src/api.ts
+```
+
+## What It Does
+
+Seshmark auto-tags every AI commit with metadata — agent, model, session ID — embedded directly in Git commit messages. Later, you can query, blame, and resume sessions.
+
+**Zero configuration.** Install once. Use any AI tool. The Git hook handles everything.
+
+```bash
+$ git agentblame src/auth.ts
+
+  1  [human]           const express = require('express');
+  2  [cursor]          import { oauth } from './oauth';
+  3  [claude]          function validateToken(token: string) {
+  4  [human]             if (!token) return null;
+  5  [copilot]           const hash = crypto.sha256(token);
+```
 
 ## Install
 
@@ -17,13 +42,7 @@ Works with **any** AI tool — Cursor, Claude Code, OpenCode, Codex, Copilot, Ai
 curl -fsSL https://seshmark.dev/install | bash
 ```
 
-Then try it:
-
-```bash
-git agentblame src/auth.ts
-seshmark who HEAD
-seshmark query --agent cursor
-```
+Works on macOS, Linux, and WSL. One command. No dependencies.
 
 ## How It Works
 
@@ -52,6 +71,7 @@ This convention works even without installing the seshmark CLI — just type the
 | Command | Description |
 |---------|-------------|
 | `git agentblame <file>` | Show AI attribution per line |
+| `seshmark stats` | Shareable report: AI % by agent, model, file |
 | `seshmark query [filters]` | Search AI-tagged commits |
 | `seshmark who [commit]` | Show metadata for a commit |
 | `seshmark context <commit>` | Reconstruct session context |
@@ -83,7 +103,11 @@ seshmark blame src/auth.ts --format json
 seshmark context HEAD --format json
 ```
 
-This enables autonomous agents to discover sessions and reconstruct context programmatically.
+## VS Code Extension
+
+See `[cursor]`, `[claude]` inline in your editor gutter. Hover for session details.
+
+[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=seshmark.seshmark)
 
 ## License
 
