@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seshmark — Agent-Aware Git History</title>
+    <meta name="description" content="Know which AI wrote every line of your code. git agentblame for Cursor, Claude, Copilot, and any AI tool.">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-elevated: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #3fb950;
+            --accent-bright: #56d364;
+            --cursor: #ff9900;
+            --claude: #cc785c;
+            --codex: #19c37d;
+            --human: #6e7681;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 48px 0 32px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-bright), #58d5ba);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .aliases {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .aliases span {
+            color: var(--accent-bright);
+            margin: 0 4px;
+        }
+
+        /* Install */
+        .install {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+            text-align: center;
+        }
+
+        .install-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .install-code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 15px;
+            background: #010409;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color 0.2s;
+            user-select: all;
+        }
+
+        .install-code:hover {
+            border-color: var(--accent);
+        }
+
+        .install-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        /* Demo */
+        .demo {
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .demo-gif {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 80px 40px;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin: 48px 0;
+        }
+
+        .feature {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .feature h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--accent-bright);
+        }
+
+        .feature p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .feature code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 12px;
+            background: #010409;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text);
+        }
+
+        /* Terminal demo */
+        .terminal {
+            background: #010409;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin: 32px 0;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: var(--bg-elevated);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 20px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .terminal-line {
+            margin: 2px 0;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-bright);
+        }
+
+        .terminal-command {
+            color: var(--text);
+        }
+
+        .terminal-output {
+            color: var(--text-muted);
+        }
+
+        .agent-cursor { color: var(--cursor); }
+        .agent-claude { color: var(--claude); }
+        .agent-human { color: var(--human); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        footer a {
+            color: var(--accent-bright);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .logo { font-size: 36px; }
+            .tagline { font-size: 16px; }
+            .install-code { font-size: 13px; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Seshmark</div>
+            <p class="tagline">Agent-aware Git history. Know which AI wrote every line.</p>
+            <p class="aliases">
+                Also known as:
+                <span>git agentblame</span>
+                <span>agentblame</span>
+                <span>aiblame</span>
+            </p>
+        </header>
+
+        <div class="install">
+            <div class="install-label">Install</div>
+            <div class="install-code" onclick="navigator.clipboard.writeText(this.textContent);this.style.borderColor='var(--accent-bright)';setTimeout(()=>this.style.borderColor='',1000)">
+curl -fsSL https://seshmark.github.io/install.sh | bash
+            </div>
+            <p class="install-hint">Works on macOS, Linux, and WSL. One command. No dependencies.</p>
+        </div>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+            </div>
+            <div class="terminal-body">
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command"> git agentblame src/auth.ts</span>
+                </div>
+                <div class="terminal-line terminal-output">
+                    <span class="agent-human">[human&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span> const express = require('express');
+                </div>
+                <div class="terminal-line terminal-output">
+                    <span class="agent-cursor">[cursor|abc123|cursor]</span> import { oauth } from './oauth';
+                </div>
+                <div class="terminal-line terminal-output">
+                    <span class="agent-claude">[claude|xyz789|claude]</span> function validateToken(token: string) {
+                </div>
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command"> seshmark query --agent cursor --path auth</span>
+                </div>
+                <div class="terminal-line terminal-output">
+                    a3f9d2e | 2026-05-07 | cursor | claude-sonnet | feat: implement OAuth2
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>Zero Configuration</h3>
+                <p>Install once. The Git hook auto-tags every commit made by Cursor, Claude Code, Copilot, or any tool that sets <code>SESHMARK_*</code> env vars.</p>
+            </div>
+            <div class="feature">
+                <h3>Branch Inference</h3>
+                <p>Working on <code>claude/feature-auth</code>? Commits are automatically tagged with <code>AI-Agent: claude</code> even without explicit session tracking.</p>
+            </div>
+            <div class="feature">
+                <h3>Tool Agnostic</h3>
+                <p>No vendor lock-in. Works with Cursor, Claude Code, OpenCode, Codex, Aider, GitHub Copilot, or any future AI coding tool.</p>
+            </div>
+            <div class="feature">
+                <h3>Orchestrator Ready</h3>
+                <p>Every command outputs <code>--format json</code>. Autonomous agents can trace code back to its original session and resume or reconstruct context.</p>
+            </div>
+            <div class="feature">
+                <h3>VS Code Extension</h3>
+                <p>See <code>[cursor]</code>, <code>[claude]</code> inline in your editor gutter. Hover for session details. Toggle on/off from the status bar.</p>
+            </div>
+            <div class="feature">
+                <h3>Git Native</h3>
+                <p>The convention works without any tool installed. Just add <code>Seshmark-Version</code>, <code>AI-Session</code>, <code>AI-Agent</code> trailers to commit messages by hand.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                <a href="https://github.com/seshmark/seshmark">GitHub</a> ·
+                <a href="https://github.com/seshmark/seshmark/blob/main/README.md">Docs</a> ·
+                <a href="https://github.com/seshmark/seshmark/tree/main/vscode-extension">VS Code Extension</a>
+            </p>
+            <p style="margin-top: 12px; font-size: 12px;">MIT License · No vendor APIs · No central database</p>
+        </footer>
+    </div>
+</body>
+</html>

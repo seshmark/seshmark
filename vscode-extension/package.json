@@ -1,0 +1,90 @@
+{
+  "name": "seshmark",
+  "displayName": "Seshmark — Agent Blame",
+  "description": "Show AI session attribution inline in your code editor",
+  "version": "0.1.0",
+  "publisher": "seshmark",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "SCM providers",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "ai",
+    "git",
+    "blame",
+    "cursor",
+    "claude",
+    "copilot",
+    "agent"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "seshmark.blame",
+        "title": "Agent Blame",
+        "category": "Seshmark"
+      },
+      {
+        "command": "seshmark.query",
+        "title": "Query AI Commits",
+        "category": "Seshmark"
+      },
+      {
+        "command": "seshmark.who",
+        "title": "Show Commit Info",
+        "category": "Seshmark"
+      },
+      {
+        "command": "seshmark.toggle",
+        "title": "Toggle Inline Decorations",
+        "category": "Seshmark"
+      }
+    ],
+    "configuration": {
+      "title": "Seshmark",
+      "properties": {
+        "seshmark.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show AI attribution inline"
+        },
+        "seshmark.showAgentInGutter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show agent name in gutter (e.g., [cursor])"
+        },
+        "seshmark.colors": {
+          "type": "object",
+          "default": {
+            "cursor": "#FF9900",
+            "claude": "#CC785C",
+            "codex": "#19C37D",
+            "opencode": "#3B82F6",
+            "aider": "#8B5CF6",
+            "github-copilot": "#6E7681",
+            "human": "#6E7681"
+          },
+          "description": "Colors for each agent in the gutter"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "18.x",
+    "typescript": "^5.3.0"
+  }
+}
