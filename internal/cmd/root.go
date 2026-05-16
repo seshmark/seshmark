@@ -19,6 +19,8 @@ Also known as: git agentblame, agentblame, aiblame`,
 
 func Execute(version string) {
 	rootCmd.Version = version
+	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{ .Version }}
+`)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
