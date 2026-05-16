@@ -36,7 +36,7 @@ func TestHookInstallAndCommit(t *testing.T) {
 	bin := filepath.Join(binDir, "seshmark")
 
 	// Install hook
-	installCmd := exec.Command(bin, "hook", "install")
+	installCmd := exec.Command(bin, "hook", "install", "--force")
 	installCmd.Dir = tmpDir
 	if out, err := installCmd.CombinedOutput(); err != nil {
 		t.Fatalf("hook install failed: %v\n%s", err, out)
@@ -88,8 +88,8 @@ func TestBranchInference(t *testing.T) {
 	tmpDir, binDir := setupTestRepo(t)
 	bin := filepath.Join(binDir, "seshmark")
 
-	// Install hook
-	hookInstall := exec.Command(bin, "hook", "install")
+	// Install hook with force
+	hookInstall := exec.Command(bin, "hook", "install", "--force")
 	hookInstall.Dir = tmpDir
 	hookInstall.Run()
 
@@ -118,8 +118,8 @@ func TestWhoAndBlame(t *testing.T) {
 	tmpDir, binDir := setupTestRepo(t)
 	bin := filepath.Join(binDir, "seshmark")
 
-	// Install hook
-	hookInstall := exec.Command(bin, "hook", "install")
+	// Install hook with force
+	hookInstall := exec.Command(bin, "hook", "install", "--force")
 	hookInstall.Dir = tmpDir
 	hookInstall.Run()
 
@@ -149,5 +149,65 @@ func TestWhoAndBlame(t *testing.T) {
 	out, _ = blameCmd.CombinedOutput()
 	if !strings.Contains(string(out), `"ai_agent": "cursor"`) {
 		t.Errorf("blame did not find agent, got: %s", out)
+	}
+}
+
+func TestBlameFields(t *testing.T) {
+	tmpDir, binDir := setupTestRepo(t)
+	bin := filepath.Join(binDir, "seshmark")
+
+	// Install hook
+	exec.Command(bin, "hook", "install", "--force").Run()
+
+	// Create a commit with full metadata
+	os.WriteFile(filepath.Join(tmpDir, "test.txt"), []byte("content\n"), 0644)
+	exec.Command("git", "-C", tmpDir, "add", "test.txt").Run()
+
+	commitCmd := exec.Command("git", "-C", tmpDir, "commit", "-m", "feat: test")
+	commitCmd.Env = append(os.Environ(), "PATH="+binDir+":"+os.Getenv("PATH"),
+		"SESHMARK_SESSION_ID=cursor:sess-1",
+		"SESHMARK_AGENT=cursor",
+		"SESHMARK_MODEL=claude-sonnet-4")
+	if out, err := commitCmd.CombinedOutput(); err != nil {
+		t.Fatalf("commit failed: %v\n%s", err, out)
+	}
+
+	tests := []struct {
+		name     string
+		fields   string
+		want     []string
+		dontWant []string
+	}{
+		{"default fields", "", []string{"cursor", "sess-1", "claude-sonnet"}, nil},
+		{"agent only", "agent", []string{"[cursor]"}, []string{"sess-1", "claude-sonnet"}},
+		{"agent+model", "agent,model", []string{"cursor", "claude-sonnet"}, []string{"sess-1"}},
+		{"agent+session", "agent,session", []string{"cursor", "sess-1"}, []string{"claude-sonnet"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := []string{"blame", "test.txt"}
+			if tt.fields != "" {
+				args = append(args, "--fields", tt.fields)
+			}
+			blameCmd := exec.Command(bin, args...)
+			blameCmd.Dir = tmpDir
+			out, err := blameCmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("blame failed: %v\n%s", err, out)
+			}
+			body := string(out)
+
+			for _, want := range tt.want {
+				if !strings.Contains(body, want) {
+					t.Errorf("expected %q to contain %q", body, want)
+				}
+			}
+			for _, dontWant := range tt.dontWant {
+				if strings.Contains(body, dontWant) {
+					t.Errorf("expected %q to NOT contain %q", body, dontWant)
+				}
+			}
+		})
 	}
 }
