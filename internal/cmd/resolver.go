@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -56,6 +57,11 @@ var resolverCreateCmd = &cobra.Command{
 		r := resolver.Find(provider)
 		if r.Exists {
 			return fmt.Errorf("resolver '%s' already exists at %s", provider, r.Path)
+		}
+
+		// Ensure directory exists
+		if err := os.MkdirAll(filepath.Dir(r.Path), 0755); err != nil {
+			return fmt.Errorf("cannot create resolver directory: %w", err)
 		}
 
 		// Write template
