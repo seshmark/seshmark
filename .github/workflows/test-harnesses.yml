@@ -1,0 +1,188 @@
+name: Harness Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-harnesses:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build seshmark
+        run: go build -o seshmark .
+
+      - name: Add seshmark to PATH
+        run: echo "$PWD" >> $GITHUB_PATH
+
+      # ── Test 1: SESHMARK_* env vars (all tools) ──
+      - name: "Test: SESHMARK_* env vars (Cursor)"
+        run: |
+          cd /tmp && rm -rf t1 && mkdir t1 && cd t1 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="cursor:chat-abc123" \
+          SESHMARK_AGENT="cursor" \
+          SESHMARK_MODEL="claude-sonnet-4" \
+          git commit --allow-empty -m "test: cursor env vars"
+          git log -1 --format="%B" | grep -q "AI-Session: cursor:chat-abc123" || exit 1
+          git log -1 --format="%B" | grep -q "AI-Agent: cursor" || exit 1
+          git log -1 --format="%B" | grep -q "AI-Model: claude-sonnet-4" || exit 1
+          echo "✅ Cursor env vars OK"
+
+      - name: "Test: SESHMARK_* env vars (Claude Code)"
+        run: |
+          cd /tmp && rm -rf t2 && mkdir t2 && cd t2 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="claude:thread-xyz" \
+          SESHMARK_AGENT="claude" \
+          SESHMARK_MODEL="claude-opus-4" \
+          git commit --allow-empty -m "test: claude env vars"
+          git log -1 --format="%B" | grep -q "AI-Agent: claude" || exit 1
+          git log -1 --format="%B" | grep -q "AI-Model: claude-opus-4" || exit 1
+          echo "✅ Claude Code env vars OK"
+
+      - name: "Test: SESHMARK_* env vars (Copilot)"
+        run: |
+          cd /tmp && rm -rf t3 && mkdir t3 && cd t3 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="copilot:sess-001" \
+          SESHMARK_AGENT="github-copilot" \
+          SESHMARK_MODEL="gpt-4o" \
+          git commit --allow-empty -m "test: copilot env vars"
+          git log -1 --format="%B" | grep -q "AI-Agent: github-copilot" || exit 1
+          echo "✅ Copilot env vars OK"
+
+      - name: "Test: SESHMARK_* env vars (Aider)"
+        run: |
+          cd /tmp && rm -rf t4 && mkdir t4 && cd t4 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="aider:conv-001" \
+          SESHMARK_AGENT="aider" \
+          SESHMARK_MODEL="qwen2.5-coder" \
+          git commit --allow-empty -m "test: aider env vars"
+          git log -1 --format="%B" | grep -q "AI-Agent: aider" || exit 1
+          echo "✅ Aider env vars OK"
+
+      - name: "Test: SESHMARK_* env vars (OpenCode)"
+        run: |
+          cd /tmp && rm -rf t5 && mkdir t5 && cd t5 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="opencode:sess-001" \
+          SESHMARK_AGENT="opencode" \
+          SESHMARK_MODEL="deepseek-v4" \
+          git commit --allow-empty -m "test: opencode env vars"
+          git log -1 --format="%B" | grep -q "AI-Agent: opencode" || exit 1
+          echo "✅ OpenCode env vars OK"
+
+      - name: "Test: SESHMARK_* env vars (Pi)"
+        run: |
+          cd /tmp && rm -rf t6 && mkdir t6 && cd t6 && git init
+          seshmark hook install --force
+          SESHMARK_SESSION_ID="pi:test-session" \
+          SESHMARK_AGENT="pi" \
+          SESHMARK_MODEL="deepseek-v4" \
+          git commit --allow-empty -m "test: pi env vars"
+          git log -1 --format="%B" | grep -q "AI-Agent: pi" || exit 1
+          echo "✅ Pi env vars OK"
+
+      # ── Test 2: Branch inference ──
+      - name: "Test: Branch inference (cursor/feature)"
+        run: |
+          cd /tmp && rm -rf t7 && mkdir t7 && cd t7 && git init
+          seshmark hook install --force
+          git checkout -b cursor/feature-test
+          git commit --allow-empty -m "test: cursor branch"
+          git log -1 --format="%B" | grep -q "AI-Agent: cursor" || exit 1
+          echo "✅ Branch inference (cursor) OK"
+
+      - name: "Test: Branch inference (claude/feature)"
+        run: |
+          cd /tmp && rm -rf t8 && mkdir t8 && cd t8 && git init
+          seshmark hook install --force
+          git checkout -b claude/auth-refactor
+          git commit --allow-empty -m "test: claude branch"
+          git log -1 --format="%B" | grep -q "AI-Agent: claude" || exit 1
+          echo "✅ Branch inference (claude) OK"
+
+      - name: "Test: Branch inference (unknown tool prefix)"
+        run: |
+          cd /tmp && rm -rf t9 && mkdir t9 && cd t9 && git init
+          seshmark hook install --force
+          git checkout -b my-custom-tool/feature
+          git commit --allow-empty -m "test: unknown tool branch"
+          git log -1 --format="%B" | grep -q "AI-Agent: my-custom-tool" || exit 1
+          echo "✅ Branch inference (unknown tool) OK"
+
+      # ── Test 3: seshmark track ──
+      - name: "Test: seshmark track + untrack"
+        run: |
+          cd /tmp && rm -rf t10 && mkdir t10 && cd t10 && git init
+          seshmark hook install --force
+          seshmark track cursor:manual-session
+          git commit --allow-empty -m "test: manual track"
+          git log -1 --format="%B" | grep -q "AI-Session: cursor:manual-session" || exit 1
+          git log -1 --format="%B" | grep -q "AI-Agent: cursor" || exit 1
+          echo "✅ seshmark track OK"
+
+          # Untrack and verify next commit has no session
+          # (hook runs but finds nothing)
+          seshmark untrack
+          echo "untracked" > f.txt && git add f.txt
+          git commit -m "test: after untrack"
+          # The hook may detect test process — but should NOT have the old session
+          git log -1 --format="%B" | grep -q "cursor:manual-session" && exit 1 || true
+          echo "✅ seshmark untrack OK"
+
+      # ── Test 4: Priority order ──
+      - name: "Test: Env vars override branch inference"
+        run: |
+          cd /tmp && rm -rf t11 && mkdir t11 && cd t11 && git init
+          seshmark hook install --force
+          git checkout -b claude/feature
+          # Env vars should take priority over branch name
+          SESHMARK_AGENT="cursor" git commit --allow-empty -m "test: override"
+          git log -1 --format="%B" | grep -q "AI-Agent: cursor" || exit 1
+          echo "✅ Env vars override branch OK"
+
+      # ── Test 5: seshmark upgrade works ──
+      - name: "Test: seshmark upgrade --help"
+        run: |
+          seshmark upgrade --help | grep -q "upgrade" || exit 1
+          echo "✅ upgrade --help OK"
+
+      # ── Test 6: seshmark doctor ──
+      - name: "Test: seshmark doctor"
+        run: |
+          cd /tmp && rm -rf t12 && mkdir t12 && cd t12 && git init
+          seshmark hook install --force
+          seshmark doctor 2>&1 | grep -q "seshmark" || exit 1
+          echo "✅ doctor OK"
+
+      # ── Test 7: Blame with custom fields ──
+      - name: "Test: blame --fields"
+        run: |
+          cd /tmp && rm -rf t13 && mkdir t13 && cd t13 && git init
+          seshmark hook install --force
+          echo "hello" > f.txt && git add f.txt
+          SESHMARK_SESSION_ID="cursor:test" SESHMARK_AGENT="cursor" SESHMARK_MODEL="gpt-4o" git commit -m "test: blame fields"
+          seshmark blame f.txt --fields agent,model | grep -q "cursor" || exit 1
+          seshmark blame f.txt --fields agent | grep -q "cursor" || exit 1
+          echo "✅ blame --fields OK"
+
+      - name: All harness tests passed
+        run: echo "🎉 All ${{ matrix.os }} harness integration tests passed!"
