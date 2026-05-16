@@ -1,157 +1,221 @@
-<!-- Seshmark Brand Header -->
+<!--
+╔══════════════════════════════════════════════════════╗
+║  Seshmark — git agentblame                          ║
+║  Know which AI wrote every line.                    ║
+╚══════════════════════════════════════════════════════╝
+-->
 <p align="center">
   <img src="img_assets/favicon.png" alt="Seshmark" width="80">
 </p>
 
 <h1 align="center">Seshmark</h1>
 
+<h3 align="center">
+  Know which AI (<code>cursor</code>, <code>claude</code>, <code>copilot</code>, <code>pi</code>) wrote every line.<br>
+  <code>git agentblame</code> — like <code>git blame</code>, but for AI agents.
+</h3>
+
 <p align="center">
-  <img src="img_assets/hero_image.png" alt="git agentblame — Know which AI wrote every line" width="100%">
+  <a href="https://github.com/seshmark/seshmark/releases">
+    <img src="https://img.shields.io/github/v/release/seshmark/seshmark?color=3fb950&label=version" alt="Version">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+  </a>
+  <a href="https://github.com/seshmark/seshmark/actions">
+    <img src="https://github.com/seshmark/seshmark/actions/workflows/test-harnesses.yml/badge.svg" alt="CI">
+  </a>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="img_assets/hero_image_v2.png" alt="git agentblame — Know which AI wrote every line" width="100%">
+</p>
+
+<br>
+
+<p align="center">
+  <b>One command to install. Works with every AI tool. Zero config.</b>
 </p>
 
 ---
 
+## Quick Start
+
 ```bash
 curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
 ```
 
-**Try it without installing:**
+**Already installed? Upgrade to the latest:**
+
+```bash
+seshmark upgrade
+```
+
+**Try it without installing anything:**
+
 ```bash
 git clone https://github.com/seshmark/demo
 cd demo
-git agentblame src/api.ts
+git agentblame src/auth.ts
 ```
+
+You'll see output like this — every line tagged with the AI agent that wrote it:
+
+```
+[human]          const express = require('express');
+[cursor│abc123]  import { oauth } from './oauth';
+[claude│xyz789]  function validateToken(token: string) {
+[human]            if (!token) return null;
+```
+
+---
 
 ## What It Does
 
-Seshmark auto-tags every AI commit with metadata — agent, model, session ID — embedded directly in Git commit messages. Later, you can query, blame, and resume sessions.
+Seshmark is a **zero-infrastructure, tool-agnostic convention** that links AI coding agent sessions to Git commits.
 
-**Zero configuration.** Install once. Use any AI tool. The Git hook handles everything.
-
-```bash
-$ git agentblame src/auth.ts
-
-  1  [human]           const express = require('express');
-  2  [cursor]          import { oauth } from './oauth';
-  3  [claude]          function validateToken(token: string) {
-  4  [human]             if (!token) return null;
-  5  [copilot]           const hash = crypto.sha256(token);
-```
-
-## Install
-
-```bash
-curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
-```
-
-Works on macOS, Linux, and WSL. One command. No dependencies.
-
-## How It Works — ✨ The Magic
-
-1. **Install once.** Seshmark adds a silent Git hook. That's it. No config files. No daemons. No accounts.
-
-2. **Use your AI tools as you normally would.** Cursor, Claude Code, Copilot, Pi, Aider, OpenCode — any of them. Every commit gets invisibly stamped with `AI-Agent`, `AI-Session`, and `AI-Model` trailers. You won't even notice it happening.
-
-3. **Run `git agentblame` whenever you're curious.** Suddenly every line has a story. Which AI wrote it? What session? What model? It's all there.
-
-4. **Or dig deeper.** Query by agent, model, or file. Resume the exact session. Share stats with your team.
-
-Seshmark figures out which AI tool is running automatically — whether through environment variables, branch names, or process detection. You don't need to think about it. It just works.
-
-> *Curious how it actually works? See [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) for the technical details.*
-
-## The Convention
-
-AI-assisted commits include trailers:
+When you (or your AI agent) make a commit, seshmark silently adds metadata — which agent, which model, which session — as standard Git trailers:
 
 ```
-feat: implement OAuth2 middleware
-
 Seshmark-Version: 1.0.0
 AI-Session: cursor:chat-abc123
 AI-Agent: cursor
 AI-Model: claude-sonnet-4-20250514
 ```
 
-This convention works even without installing the seshmark CLI — just type the trailers manually.
+Later, you can **blame**, **query**, and **resume** any AI session. No config files. No databases. No APIs. Your data stays on your machine.
+
+---
+
+## How It Works — The Magic
+
+1. **Install once.** Seshmark adds a silent Git hook. That's it.
+
+2. **Use your AI tools as you normally would.** Cursor, Claude Code, Copilot, Pi, Aider, OpenCode — any of them. Every commit gets invisibly stamped with AI metadata. You won't even notice it happening.
+
+3. **Run `git agentblame` whenever you're curious.** Suddenly every line has a story. Which AI wrote it? What session? What model?
+
+4. **Dig deeper — query, resume, share stats.** It's all there.
+
+Seshmark figures out which AI tool is running automatically — whether through a session you started (`seshmark track`), environment variables the tool sets, your branch name (`pi/feature`), or by detecting the tool's process directly. You don't need to think about it. It just works.
+
+> *For the curious — [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) pulls back the curtain on how detection works and how to add support for any tool.*
+
+---
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `git agentblame <file>` | Show AI attribution per line |
-| `seshmark stats` | Shareable report: AI % by agent, model, file |
-| `seshmark query [filters]` | Search AI-tagged commits |
-| `seshmark who [commit]` | Show metadata for a commit |
-| `seshmark context <commit>` | Reconstruct session context |
-| `seshmark log <session>` | List commits in a session |
-| `seshmark status` | Show active session |
-| `seshmark doctor` | Diagnose installation |
+| `git agentblame <file>` | Show which AI wrote each line. Customize with `--fields agent,model,session` |
+| `seshmark query --agent cursor` | Search commits by agent, model, file, or date |
+| `seshmark who <commit>` | Show full metadata (session, agent, model) for a commit |
+| `seshmark stats` | AI usage report with agent breakdown and bar charts |
+| `seshmark resume <session>` | Reopen the AI session that wrote the code |
+| `seshmark track <session>` | Start tracking a session manually |
+| `seshmark upgrade` | Check for updates and upgrade to the latest version |
+| `seshmark doctor` | Diagnose your installation |
 
-## For Harness Builders
+Every command supports `--format json` for programmatic use by AI agents and CI pipelines.
 
-Add three env vars before `git commit`:
+---
 
-```python
-env["SESHMARK_SESSION_ID"] = "opencode:sess-001"
-env["SESHMARK_AGENT"] = "opencode"
-env["SESHMARK_MODEL"] = "qwen2.5-coder"
+## Customize
+
+**Blame output.** By default, `git agentblame` shows `[agent│session│model]`. Change it to show only what you need:
+
+```bash
+git agentblame file.ts --fields agent,model
 ```
 
-That's it. No library import. No API call. No dependency. Works with Cursor, Claude Code, OpenCode, Copilot, Aider, and any tool that sets env vars before `git commit`.
+Or create a `.seshmark.yml` file in your repo:
 
-Integrations for each tool: [`HARNESS_EXAMPLES.md`](HARNESS_EXAMPLES.md)
+```yaml
+# .seshmark.yml
+blame:
+  fields: [agent, session, model]
+```
+
+**Policy enforcement.** Add `.github/seshmark.yml` to require human review when AI code exceeds a threshold (Enterprise feature).
+
+---
+
+## Supported Tools
+
+seshmark works with every AI coding harness — no special integration needed. Here's how they're detected:
+
+| Tool | Detection Method | Metadata Captured |
+|------|-----------------|-------------------|
+| **Cursor** | Branch name (`cursor/feature`) or env vars | agent + session + model |
+| **Claude Code** | Branch name (`claude/feature`) or env vars | agent + session + model |
+| **Pi** | Process detection or env vars | agent |
+| **Copilot** | Branch name (`copilot/feature`) or env vars | agent + session + model |
+| **Aider** | Branch name (`aider/feature`) or process detection | agent |
+| **OpenCode** | Branch name (`opencode/feature`) or env vars | agent + session + model |
+| **Any CLI tool** | Process detection — walks parent processes automatically | agent |
+| **Any tool with env vars** | SESHMARK_SESSION_ID + SESHMARK_AGENT | session + agent + model |
+
+See [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) to add support for any tool in 3 ways.
+
+---
+
+## For AI Tool Builders
+
+Adding seshmark support to your tool is **three environment variables**:
+
+```python
+# Before calling git commit:
+os.environ["SESHMARK_SESSION_ID"] = "my-tool:sess-001"
+os.environ["SESHMARK_AGENT"] = "my-tool"
+os.environ["SESHMARK_MODEL"] = "gpt-4o"
+```
+
+No library import. No API call. No dependency. That's it.
+
+Want session resumption? Add a resolver script:
+
+```bash
+# ~/.local/share/seshmark/resolvers/my-tool
+#!/bin/bash
+SESSION_ID="$1"
+my-tool resume --session "$SESSION_ID"
+```
+
+---
 
 ## Session Resumption
 
-After finding which AI wrote a line, you can resume the exact session:
+Found a line written by an AI and want to continue that conversation?
 
 ```bash
-seshmark resume HEAD                  # Resume session from latest commit
+seshmark resume HEAD                  # Resume from latest commit
 seshmark resume a3f9d2e               # Resume from a specific commit
 seshmark resume cursor:chat-abc123    # Resume by session ID
 ```
 
-Seshmark tries to find a **resolver** (a script that knows how to open the native tool).
+Seshmark finds the right resolver script and opens the session in the native tool. Built-in resolvers for Pi, OpenCode, Cursor, and Claude Code are in [`examples/resolvers/`](examples/resolvers/).
 
-### Manage Resolvers
+---
 
-```bash
-seshmark resolver list                # List installed resolvers
-seshmark resolver create cursor       # Create a starter resolver
-seshmark resolver install mytool ./my-resolver.sh
-seshmark resolver test cursor         # Test with a dummy session
-seshmark resolver uninstall mytool
-```
+## Contributing
 
-### Add Your Own Resolver
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for:
+- Development setup guide
+- How to add a resolver for a new tool
+- Running tests (`go test ./...`)
+- Building from source
+- Pull request guidelines
 
-Any tool can add seshmark support by creating one script:
-
-```bash
-# ~/.local/share/seshmark/resolvers/mytool
-#!/bin/bash
-SESSION_ID="$1"
-mytool resume "$SESSION_ID"
-```
-
-Built-in resolvers for Pi, OpenCode, Cursor, and Claude Code are at [`examples/resolvers/`](examples/resolvers/).
-
-## For Orchestrators (AI Agents)
-
-Every command supports `--format json`. Any AI agent can run seshmark commands and consume the output:
-
-```bash
-seshmark blame src/auth.ts --format json
-seshmark context HEAD --format prompt
-seshmark stats --format json
-```
-
-## Agent Skill System
-
-AI agents (Pi, Claude Code, OpenCode, etc.) can load a skill that lets them query and resume sessions automatically. See [`SKILL_SYSTEM.md`](SKILL_SYSTEM.md).
+---
 
 ## License
 
-MIT
-# pi dogfooding note
+MIT &copy; [Seshmark Contributors](https://github.com/seshmark/seshmark)
+
+---
+
+<p align="center">
+  <sub>100% client-side · No servers · No APIs · No telemetry · Your data stays on your machine</sub>
+</p>
