@@ -154,5 +154,4 @@ AI agents (Pi, Claude Code, OpenCode, etc.) can load a skill that lets them quer
 ## License
 
 MIT
-# dogfooding note
 # pi dogfooding note
