@@ -30,6 +30,12 @@ jobs:
       - name: Add seshmark to PATH
         run: echo "$PWD" >> $GITHUB_PATH
 
+      # ── Git identity (required in CI) ──
+      - name: Configure Git
+        run: |
+          git config --global user.email "test@seshmark.dev"
+          git config --global user.name "Seshmark Test"
+
       # ── Test 1: SESHMARK_* env vars (all tools) ──
       - name: "Test: SESHMARK_* env vars (Cursor)"
         run: |
@@ -154,8 +160,8 @@ jobs:
           cd /tmp && rm -rf t11 && mkdir t11 && cd t11 && git init
           seshmark hook install --force
           git checkout -b claude/feature
-          # Env vars should take priority over branch name
-          SESHMARK_AGENT="cursor" git commit --allow-empty -m "test: override"
+          # SESHMARK_AGENT alone (without SESSION_ID) should still override branch
+          SESHMARK_AGENT="cursor" SESHMARK_MODEL="gpt-4o" git commit --allow-empty -m "test: override"
           git log -1 --format="%B" | grep -q "AI-Agent: cursor" || exit 1
           echo "✅ Env vars override branch OK"
 

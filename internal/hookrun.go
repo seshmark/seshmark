@@ -83,6 +83,10 @@ func resolveMetadata() (sessionID, agent, model string) {
 	if sid := os.Getenv("SESHMARK_SESSION_ID"); sid != "" {
 		return sid, os.Getenv("SESHMARK_AGENT"), os.Getenv("SESHMARK_MODEL")
 	}
+	// Priority 2b: agent-only via env var (no session ID needed)
+	if agent := os.Getenv("SESHMARK_AGENT"); agent != "" {
+		return "", agent, os.Getenv("SESHMARK_MODEL")
+	}
 
 	// Priority 3: bare env vars (legacy)
 	if sid := os.Getenv("AI_SESSION_ID"); sid != "" {
