@@ -1,6 +1,6 @@
 # Seshmark
 
-> `git agentblame` — like `git blame`, but shows which AI (Cursor, Claude, Copilot) wrote each line.
+> `git agentblame` — like `git blame`, but shows which AI (Cursor, Claude, Copilot) wrote each line and lets you resume the exact session.
 
 <!-- Replace with your actual GIF: -->
 <!-- ![Demo](docs/demo.gif) -->
@@ -75,12 +75,9 @@ This convention works even without installing the seshmark CLI — just type the
 | `seshmark query [filters]` | Search AI-tagged commits |
 | `seshmark who [commit]` | Show metadata for a commit |
 | `seshmark context <commit>` | Reconstruct session context |
-| `seshmark resume [commit]` | Resume session via native resolver |
 | `seshmark log <session>` | List commits in a session |
 | `seshmark status` | Show active session |
 | `seshmark doctor` | Diagnose installation |
-| `seshmark track <id>` | Manual session tracking |
-| `seshmark untrack` | Stop tracking |
 
 ## For Harness Builders
 
@@ -92,22 +89,23 @@ env["SESHMARK_AGENT"] = "opencode"
 env["SESHMARK_MODEL"] = "qwen2.5-coder"
 ```
 
-That's it. No library import. No API call. No dependency.
+That's it. No library import. No API call. No dependency. Works with Cursor, Claude Code, OpenCode, Copilot, Aider, and any tool that sets env vars before `git commit`.
 
-## For Orchestrators
+Integrations for each tool: [`HARNESS_EXAMPLES.md`](HARNESS_EXAMPLES.md)
 
-Every command supports `--format json`:
+## For Orchestrators (AI Agents)
+
+Every command supports `--format json`. Any AI agent can run seshmark commands and consume the output:
 
 ```bash
 seshmark blame src/auth.ts --format json
-seshmark context HEAD --format json
+seshmark context HEAD --format prompt
+seshmark stats --format json
 ```
 
-## VS Code Extension
+## Agent Skill System
 
-See `[cursor]`, `[claude]` inline in your editor gutter. Hover for session details.
-
-[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=seshmark.seshmark)
+AI agents (Pi, Claude Code, OpenCode, etc.) can load a skill that lets them query and resume sessions automatically. See [`SKILL_SYSTEM.md`](SKILL_SYSTEM.md).
 
 ## License
 
