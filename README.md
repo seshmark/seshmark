@@ -93,6 +93,41 @@ That's it. No library import. No API call. No dependency. Works with Cursor, Cla
 
 Integrations for each tool: [`HARNESS_EXAMPLES.md`](HARNESS_EXAMPLES.md)
 
+## Session Resumption
+
+After finding which AI wrote a line, you can resume the exact session:
+
+```bash
+seshmark resume HEAD                  # Resume session from latest commit
+seshmark resume a3f9d2e               # Resume from a specific commit
+seshmark resume cursor:chat-abc123    # Resume by session ID
+```
+
+Seshmark tries to find a **resolver** (a script that knows how to open the native tool).
+
+### Manage Resolvers
+
+```bash
+seshmark resolver list                # List installed resolvers
+seshmark resolver create cursor       # Create a starter resolver
+seshmark resolver install mytool ./my-resolver.sh
+seshmark resolver test cursor         # Test with a dummy session
+seshmark resolver uninstall mytool
+```
+
+### Add Your Own Resolver
+
+Any tool can add seshmark support by creating one script:
+
+```bash
+# ~/.local/share/seshmark/resolvers/mytool
+#!/bin/bash
+SESSION_ID="$1"
+mytool resume "$SESSION_ID"
+```
+
+Built-in resolvers for Pi, OpenCode, Cursor, and Claude Code are at [`examples/resolvers/`](examples/resolvers/).
+
 ## For Orchestrators (AI Agents)
 
 Every command supports `--format json`. Any AI agent can run seshmark commands and consume the output:
