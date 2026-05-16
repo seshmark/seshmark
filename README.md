@@ -10,7 +10,7 @@
 [![Go Version](https://img.shields.io/badge/go-%3E%3D1.21-blue)](go.mod)
 
 ```bash
-curl -fsSL https://seshmark.dev/install | bash
+curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
 ```
 
 **Try it without installing:**
@@ -39,7 +39,7 @@ $ git agentblame src/auth.ts
 ## Install
 
 ```bash
-curl -fsSL https://seshmark.dev/install | bash
+curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
 ```
 
 Works on macOS, Linux, and WSL. One command. No dependencies.

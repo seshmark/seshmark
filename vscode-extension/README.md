@@ -11,7 +11,7 @@ See AI session attribution inline in your code editor.
 
 ## Usage
 
-1. Install the Seshmark CLI: `curl -fsSL https://seshmark.dev/install | bash`
+1. Install the Seshmark CLI: `curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash`
 2. Install this extension
 3. Open any file in a repo with seshmark-tagged commits
 4. See `[cursor]`, `[claude]`, etc. in the gutter
