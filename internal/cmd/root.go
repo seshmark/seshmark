@@ -39,6 +39,7 @@ func init() {
 	rootCmd.AddCommand(untrackCmd)
 	rootCmd.AddCommand(noteCmd)
 	rootCmd.AddCommand(commitCmd)
+	rootCmd.AddCommand(upgradeCmd)
 }
 
 func requireGitRepo() error {

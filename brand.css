@@ -1,0 +1,208 @@
+/**
+ * Seshmark Brand Design Tokens
+ * 
+ * Import these in any project to maintain brand consistency.
+ * CSS custom properties, Tailwind config, and design system spacing.
+ * 
+ * @see BRAND_GUIDELINES.md for full brand documentation
+ */
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+:root {
+  /* ── Brand Colors ── */
+  --seshmark-green: #3FB950;
+  --seshmark-green-bright: #56D364;
+  --seshmark-green-gradient: linear-gradient(135deg, #56D364, #58D5BA);
+  
+  /* ── Surfaces ── */
+  --seshmark-bg: #0D1117;
+  --seshmark-surface: #161B22;
+  --seshmark-border: #30363D;
+  --seshmark-code-bg: #010409;
+  
+  /* ── Text ── */
+  --seshmark-text: #C9D1D9;
+  --seshmark-text-muted: #8B949E;
+  --seshmark-text-bright: #E6EDF3;
+  
+  /* ── Agent Attribution ── */
+  --seshmark-cursor: #FF9900;
+  --seshmark-claude: #CC785C;
+  --seshmark-codex: #19C37D;
+  --seshmark-opencode: #3B82F6;
+  --seshmark-aider: #8B5CF6;
+  --seshmark-human: #6E7681;
+  
+  /* ── System ── */
+  --seshmark-error: #F85149;
+  --seshmark-warning: #D29922;
+  --seshmark-success: #3FB950;
+  
+  /* ── Typography ── */
+  --seshmark-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --seshmark-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  
+  /* ── Spacing ── */
+  --seshmark-xs: 0.25rem;
+  --seshmark-sm: 0.5rem;
+  --seshmark-md: 1rem;
+  --seshmark-lg: 2rem;
+  --seshmark-xl: 4rem;
+  
+  /* ── Radius ── */
+  --seshmark-radius-sm: 4px;
+  --seshmark-radius-md: 8px;
+  --seshmark-radius-lg: 12px;
+}
+
+/* ============================================
+   Tailwind CSS Config (copy into tailwind.config.js)
+   ============================================ */
+/*
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        seshmark: {
+          green: '#3FB950',
+          'green-bright': '#56D364',
+          bg: '#0D1117',
+          surface: '#161B22',
+          border: '#30363D',
+          'code-bg': '#010409',
+          text: '#C9D1D9',
+          'text-muted': '#8B949E',
+          'text-bright': '#E6EDF3',
+          error: '#F85149',
+          warning: '#D29922',
+        },
+        agent: {
+          cursor: '#FF9900',
+          claude: '#CC785C',
+          codex: '#19C37D',
+          opencode: '#3B82F6',
+          aider: '#8B5CF6',
+          human: '#6E7681',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace'],
+      },
+    },
+  },
+}
+*/
+
+/* ============================================
+   Component Patterns
+   ============================================ */
+
+/* Terminal-style code block */
+.seshmark-terminal {
+  background: var(--seshmark-code-bg);
+  border: 1px solid var(--seshmark-border);
+  border-radius: var(--seshmark-radius-lg);
+  overflow: hidden;
+}
+
+.seshmark-terminal-header {
+  background: var(--seshmark-surface);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--seshmark-border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.seshmark-terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.seshmark-terminal-dot--red { background: #FF5F56; }
+.seshmark-terminal-dot--yellow { background: #FFBD2E; }
+.seshmark-terminal-dot--green { background: #27C93F; }
+
+.seshmark-terminal-body {
+  padding: 20px;
+  font-family: var(--seshmark-font-mono);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--seshmark-text);
+}
+
+/* Agent badge */
+.seshmark-agent-badge {
+  font-family: var(--seshmark-font-mono);
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: var(--seshmark-radius-sm);
+  background: var(--seshmark-code-bg);
+  white-space: nowrap;
+}
+
+.seshmark-agent-badge--cursor { color: var(--seshmark-cursor); }
+.seshmark-agent-badge--claude { color: var(--seshmark-claude); }
+.seshmark-agent-badge--codex { color: var(--seshmark-codex); }
+.seshmark-agent-badge--opencode { color: var(--seshmark-opencode); }
+.seshmark-agent-badge--aider { color: var(--seshmark-aider); }
+.seshmark-agent-badge--human { color: var(--seshmark-human); }
+
+/* Brand button */
+.seshmark-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-family: var(--seshmark-font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--seshmark-radius-md);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.seshmark-btn--primary {
+  background: var(--seshmark-green);
+  color: var(--seshmark-bg);
+}
+
+.seshmark-btn--primary:hover {
+  background: var(--seshmark-green-bright);
+}
+
+.seshmark-btn--secondary {
+  background: transparent;
+  color: var(--seshmark-green-bright);
+  border: 1px solid var(--seshmark-border);
+}
+
+.seshmark-btn--secondary:hover {
+  border-color: var(--seshmark-green);
+  background: rgba(63, 185, 80, 0.1);
+}
+
+/* Card / feature block */
+.seshmark-card {
+  background: var(--seshmark-surface);
+  border: 1px solid var(--seshmark-border);
+  border-radius: var(--seshmark-radius-lg);
+  padding: 24px;
+}
+
+.seshmark-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--seshmark-green-bright);
+}
+
+.seshmark-card p {
+  font-size: 14px;
+  color: var(--seshmark-text-muted);
+}

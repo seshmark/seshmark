@@ -3,180 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seshmark — Agent-Aware Git History</title>
-    <meta name="description" content="Know which AI wrote every line of your code. git agentblame for Cursor, Claude, Copilot, and any AI tool.">
+    <title>Seshmark — git agentblame: Know Which AI Wrote Every Line</title>
+    <meta name="description" content="Like git blame, but for AI agents. See which AI (Cursor, Claude, Copilot) wrote each line and resume the exact session. Zero config. Open source.">
+    <meta name="keywords" content="git blame, ai, cursor, claude, copilot, agent blame, ai attribution, open source">
+    <meta property="og:title" content="Seshmark — git agentblame">
+    <meta property="og:description" content="Know which AI wrote every line. Like git blame, but for AI agents.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seshmark.github.io/seshmark/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Seshmark — git agentblame">
+    <meta name="twitter:description" content="Know which AI wrote every line. Like git blame, but for AI agents.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* ============================================
+           Brand Tokens (from brand.css)
+           ============================================ */
         :root {
-            --bg: #0d1117;
-            --bg-elevated: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --text-muted: #8b949e;
-            --accent: #3fb950;
-            --accent-bright: #56d364;
-            --cursor: #ff9900;
-            --claude: #cc785c;
-            --codex: #19c37d;
-            --human: #6e7681;
+            --green: #3FB950;
+            --green-bright: #56D364;
+            --green-gradient: linear-gradient(135deg, #56D364, #58D5BA);
+            --bg: #0D1117;
+            --surface: #161B22;
+            --border: #30363D;
+            --code-bg: #010409;
+            --text: #C9D1D9;
+            --text-muted: #8B949E;
+            --text-bright: #E6EDF3;
+            --red: #F85149;
+            --cursor: #FF9900;
+            --claude: #CC785C;
+            --codex: #19C37D;
+            --opencode: #3B82F6;
+            --aider: #8B5CF6;
+            --human: #6E7681;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-family: var(--font-sans);
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 920px;
             margin: 0 auto;
             padding: 0 24px;
+            transition: padding 0.2s ease;
         }
 
-        /* Header */
-        header {
-            padding: 48px 0 32px;
-            text-align: center;
+        /* ============================================
+           Navigation
+           ============================================ */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            transition: padding 0.2s ease;
         }
 
-        .logo {
-            font-size: 48px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--accent-bright), #58d5ba);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        nav .nav-inner {
+            transition: height 0.2s ease;
         }
+
+        nav .nav-inner {
+            max-width: 920px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+        }
+
+        nav .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        nav .nav-brand .prompt {
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        nav .nav-brand .name {
+            font-family: var(--font-sans);
+            font-weight: 800;
+            color: var(--green);
+        }
+
+        nav .nav-logo {
+            height: 34px;
+            width: auto;
+            display: block;
+        }
+
+        nav .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: gap 0.2s ease;
+        }
+
+        nav .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav .nav-links a:hover {
+            color: var(--text);
+        }
+
+        nav .nav-links .nav-install {
+            background: var(--green);
+            color: var(--bg);
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        nav .nav-links .nav-install:hover {
+            background: var(--green-bright);
+            color: var(--bg);
+        }
+
+        /* ============================================
+           Hero Section
+           ============================================ */
+        .hero {
+            padding: 72px 0 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Subtle green glow behind hero */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: min(800px, 90vw);
+            height: min(400px, 50vw);
+            background: radial-gradient(ellipse, rgba(63, 185, 80, 0.06) 0%, transparent 70%);
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .old-way {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 500;
+            color: #484F58;
+            position: relative;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .old-way .strikethrough {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 3px;
+            background: var(--red);
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+
+        .new-way {
+            font-family: var(--font-mono);
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 20px;
+            position: relative;
+            word-break: keep-all;
+        }
+
+        .new-way .git { color: var(--text); }
+        .new-way .agent {
+            color: var(--green);
+            text-shadow: 0 0 30px rgba(63, 185, 80, 0.25);
+        }
+        .new-way .blame { color: var(--text); }
 
         .tagline {
-            font-size: 20px;
+            font-family: var(--font-sans);
+            font-size: 18px;
             color: var(--text-muted);
-            margin-bottom: 32px;
+            margin-bottom: 0;
         }
 
-        .aliases {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 14px;
-            color: var(--text-muted);
+        .tagline .highlight {
+            color: var(--text-bright);
+            font-weight: 600;
         }
 
-        .aliases span {
-            color: var(--accent-bright);
-            margin: 0 4px;
+        .hero-sub {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            color: #484F58;
+            margin-top: 10px;
+            margin-bottom: 36px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* Install */
-        .install {
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin: 32px 0;
+        .hero-sub .hero-link {
+            color: var(--green);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(63, 185, 80, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .hero-sub .hero-link:hover {
+            border-bottom-color: var(--green);
+        }
+
+        .hero-install {
+            max-width: 640px;
+            margin: 0 auto 16px;
             text-align: center;
         }
 
-        .install-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-        }
-
-        .install-code {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 15px;
-            background: #010409;
+        .install-box {
+            background: var(--code-bg);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px 20px;
+            border-radius: 10px;
+            padding: 0;
+            font-family: var(--font-mono);
+            font-size: 13px;
             color: var(--text);
-            cursor: pointer;
-            transition: border-color 0.2s;
+            cursor: default;
+            transition: border-color 0.2s, background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .install-box:hover {
+            border-color: var(--green);
+        }
+
+        .install-box .cmd-text {
+            padding: 10px 0 10px 16px;
             user-select: all;
+            -webkit-user-select: all;
         }
 
-        .install-code:hover {
-            border-color: var(--accent);
+        .install-box .prompt {
+            color: var(--green);
+            font-weight: 700;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            padding: 10px 0 10px 16px;
         }
 
-        .install-hint {
+        .install-box .cmd {
+            color: var(--text);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .install-box .cmd-pipe {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .install-box .copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 10px;
+            margin: 4px;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            transition: background 0.15s, color 0.15s, transform 0.15s;
+            flex-shrink: 0;
+            border: none;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .install-box .copy-btn:hover {
+            background: rgba(63, 185, 80, 0.12);
+            color: var(--green);
+        }
+
+        .install-box .copy-btn:active {
+            transform: scale(0.88);
+        }
+
+        .install-box.copied {
+            border-color: var(--green);
+            background: rgba(63, 185, 80, 0.04);
+        }
+
+        .install-box.copied .copy-btn {
+            color: var(--green-bright);
+        }
+
+        .install-subtitle {
             font-size: 13px;
             color: var(--text-muted);
             margin-top: 12px;
         }
 
-        /* Demo */
-        .demo {
-            margin: 48px 0;
+        /* ============================================
+           Supported Harnesses Section
+           ============================================ */
+        .harness-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
             text-align: center;
         }
 
-        .demo-gif {
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 80px 40px;
-            color: var(--text-muted);
-            font-size: 16px;
+        .harness-section .harness-label {
+            font-family: var(--font-sans);
+            font-size: 20px;
+            color: var(--text-bright);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
         }
 
-        /* Features */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
-            margin: 48px 0;
+        .harness-section .harness-label .check {
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 22px;
         }
 
-        .feature {
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
+        .harness-pills {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
-        .feature h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: var(--accent-bright);
-        }
-
-        .feature p {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .feature code {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        .harness-pill {
+            font-family: var(--font-mono);
             font-size: 12px;
-            background: #010409;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid;
+        }
+
+        .harness-pill.cursor { color: var(--cursor); border-color: rgba(255,153,0,0.25); background: rgba(255,153,0,0.06); }
+        .harness-pill.claude { color: var(--claude); border-color: rgba(204,120,92,0.25); background: rgba(204,120,92,0.06); }
+        .harness-pill.copilot { color: #8B949E; border-color: rgba(110,118,129,0.25); background: rgba(110,118,129,0.06); }
+        .harness-pill.aider { color: var(--aider); border-color: rgba(139,92,246,0.25); background: rgba(139,92,246,0.06); }
+        .harness-pill.opencode { color: var(--opencode); border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.06); }
+        .harness-pill.pi { color: var(--green); border-color: rgba(63,185,80,0.25); background: rgba(63,185,80,0.06); }
+        .harness-pill.more { color: var(--text-muted); border-color: rgba(139,148,158,0.2); background: transparent; }
+
+        .harness-pills .harness-sep {
+            color: var(--border);
+            font-size: 10px;
+        }
+
+        .harness-pills code {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            background: var(--code-bg);
+            padding: 1px 5px;
+            border-radius: 3px;
             color: var(--text);
         }
 
-        /* Terminal demo */
+        .harness-pills .harness-link,
+        .feature-link {
+            color: var(--green);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .harness-pills .harness-link:hover,
+        .feature-link:hover {
+            border-bottom-color: var(--green);
+        }
+
+        .harness-section .harness-note {
+            font-size: 13px;
+            color: #484F58;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           Terminal Demo
+           ============================================ */
+        .demo-section {
+            padding: 0 0 80px;
+        }
+
+        .demo-section h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
         .terminal {
-            background: #010409;
+            background: var(--code-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            margin: 32px 0;
             overflow: hidden;
         }
 
         .terminal-header {
-            background: var(--bg-elevated);
+            background: var(--surface);
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -195,43 +469,504 @@
         .terminal-dot.green { background: #27c93f; }
 
         .terminal-body {
-            padding: 20px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 14px;
-            line-height: 1.8;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 2;
         }
 
-        .terminal-line {
-            margin: 2px 0;
-        }
+        .term-line { margin: 0; white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+        .term-prompt { color: var(--green); font-weight: 600; }
+        .term-cmd { color: var(--text); }
+        .term-comment { color: #484F58; font-style: normal; }
+        .term-dim { color: var(--text-muted); }
+        .agent-human { color: var(--human); }
+        .agent-cursor { color: var(--cursor); }
+        .agent-claude { color: var(--claude); }
+        .term-hash { color: var(--text-muted); }
+        .term-sep { color: var(--border); }
 
-        .terminal-prompt {
-            color: var(--accent-bright);
-        }
-
-        .terminal-command {
-            color: var(--text);
-        }
-
-        .terminal-output {
+        /* Step label within terminal */
+        .term-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 28px 0 8px;
+            font-family: var(--font-sans);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             color: var(--text-muted);
         }
 
-        .agent-cursor { color: var(--cursor); }
-        .agent-claude { color: var(--claude); }
-        .agent-human { color: var(--human); }
+        .term-step::before {
+            content: '▶';
+            font-size: 8px;
+            color: var(--green);
+            flex-shrink: 0;
+        }
 
-        /* Footer */
+        .term-step::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .term-step:first-of-type {
+            margin-top: 0;
+        }
+
+        .term-step + .term-line {
+            margin-bottom: 12px !important;
+        }
+
+        /* Add spacing after each step output block */
+        .term-blame-grid,
+        .term-output-grid {
+            margin-bottom: 8px;
+        }
+
+        .term-step:last-of-type {
+            margin-top: 24px;
+        }
+
+        /* Blame output with gutter lines */
+        .term-blame-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0 12px;
+            margin: 8px 0;
+        }
+
+        .term-blame-line {
+            display: contents;
+        }
+
+        .term-blame-gutter {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #484F58;
+            text-align: right;
+            padding-right: 8px;
+            border-right: 2px solid var(--border);
+            user-select: none;
+            min-width: 32px;
+        }
+
+        .term-blame-gutter.active {
+            border-right-color: var(--green);
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .term-blame-content {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 2;
+        }
+
+        .term-blame-content .tag {
+            display: inline-block;
+            min-width: 130px;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--code-bg);
+            white-space: nowrap;
+        }
+
+        .term-blame-content .tag.human { color: var(--human); }
+        .term-blame-content .tag.cursor { color: var(--cursor); }
+        .term-blame-content .tag.claude { color: var(--claude); }
+
+        /* Color legend */
+        .term-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--code-bg);
+            border-radius: 0 0 12px 12px;
+        }
+
+        .term-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .term-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .term-legend-dot.human { background: var(--human); }
+        .term-legend-dot.cursor { background: var(--cursor); }
+        .term-legend-dot.claude { background: var(--claude); }
+
+        .term-output-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0 8px;
+            margin: 4px 0;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 2;
+        }
+
+        .term-output-key {
+            color: var(--text-muted);
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .term-output-val {
+            color: var(--text);
+        }
+
+        /* ============================================
+           How It Works
+           ============================================ */
+        .how-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .how-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 48px;
+            letter-spacing: -0.5px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            counter-reset: step;
+        }
+
+        .step {
+            counter-increment: step;
+            position: relative;
+        }
+
+        .step::before {
+            content: counter(step);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(63, 185, 80, 0.12);
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .step h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-bright);
+        }
+
+        .step p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .step code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--code-bg);
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: var(--text);
+        }
+
+        /* Arrow between steps */
+        .steps .step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 16px;
+            color: var(--border);
+            font-size: 20px;
+        }
+
+        /* ============================================
+           The Convention
+           ============================================ */
+        .convention-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .convention-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .convention-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .convention-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .convention-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .convention-card .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .convention-card .card-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .convention-card pre {
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            margin: 0;
+        }
+
+        .convention-card pre .trailer-key { color: var(--text); }
+        .convention-card pre .trailer-val { color: var(--green); }
+        .convention-card pre .commit-type { color: var(--codex); }
+        .convention-card pre .comment { color: #484F58; }
+
+        /* ============================================
+           Commands
+           ============================================ */
+        .commands-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .commands-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .commands-table {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .commands-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .commands-table th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            background: var(--code-bg);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .commands-table td {
+            padding: 12px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .commands-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .commands-table td:first-child {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--green);
+            white-space: nowrap;
+        }
+
+        .commands-table td:last-child {
+            color: var(--text-muted);
+        }
+
+        /* ============================================
+           Feature Cards
+           ============================================ */
+        .features-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .features-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .feature {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .feature:hover {
+            border-color: rgba(63, 185, 80, 0.3);
+        }
+
+        .feature h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-bright);
+        }
+
+        .feature p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .feature code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--code-bg);
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: var(--text);
+        }
+
+        /* ============================================
+           Try It CTA
+           ============================================ */
+        .cta-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .cta-section p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .cta-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text);
+            display: inline-block;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .cta-box:hover {
+            border-color: var(--green);
+        }
+
+        .cta-box .comment { color: #484F58; }
+        .cta-box .prompt { color: var(--green); }
+
+        .cta-or {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .cta-or a {
+            color: var(--green);
+            text-decoration: none;
+        }
+
+        .cta-or a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           Footer
+           ============================================ */
         footer {
             text-align: center;
             padding: 48px 0;
             border-top: 1px solid var(--border);
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         footer a {
-            color: var(--accent-bright);
+            color: var(--green);
             text-decoration: none;
         }
 
@@ -239,100 +974,698 @@
             text-decoration: underline;
         }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            .logo { font-size: 36px; }
+        footer .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        footer .footer-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        footer .badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        footer .badge .badge-dot {
+            font-size: 7px;
+            color: var(--green);
+        }
+
+        footer .footer-oss-cta {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        footer .footer-oss-cta .oss-heart {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--red);
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 4px;
+            background: rgba(248, 81, 73, 0.08);
+            padding: 0 6px;
+            border-radius: 3px;
+        }
+
+        footer .footer-oss-cta a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        footer .footer-oss-cta a:hover {
+            border-bottom-color: var(--green);
+        }
+
+        footer .footer-stars {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        footer .star-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        footer .star-link:hover {
+            color: var(--text);
+        }
+
+        footer .star-link svg {
+            transition: transform 0.2s;
+        }
+
+        footer .star-link:hover svg {
+            transform: scale(1.15);
+            color: var(--green);
+        }
+
+        footer .gh-sep {
+            color: var(--border);
+            font-size: 12px;
+        }
+
+        footer .footer-credit {
+            font-size: 13px;
+            color: #484F58;
+            margin-bottom: 24px;
+        }
+
+        footer .footer-credit a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        footer .footer-credit a:hover {
+            color: var(--text);
+        }
+
+        footer .footer-credit svg {
+            display: inline;
+        }
+
+        /* ============================================
+           Responsive
+           ============================================ */
+        @media (max-width: 860px) {
+            .new-way { font-size: clamp(28px, 7.5vw, 48px); letter-spacing: -1px; }
+            .old-way { font-size: 18px; }
             .tagline { font-size: 16px; }
-            .install-code { font-size: 13px; padding: 12px; }
+            .hero-sub { font-size: 12px; }
+            .hero { padding: 56px 0 48px; }
+            nav .nav-logo { height: 32px; }
+            nav .nav-inner { height: 48px; }
+            nav .nav-links { gap: 14px; }
+            .term-blame-content .tag { min-width: 100px; font-size: 11px; }
+        }
+
+        @media (max-width: 700px) {
+            .container { padding: 0 20px; }
+            .steps { grid-template-columns: 1fr; gap: 24px; }
+            .steps .step:not(:last-child)::after { display: none; }
+            .convention-grid { grid-template-columns: 1fr; }
+            .convention-card pre { font-size: 12px; padding: 16px; overflow-x: auto; }
+            .commands-table { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; border-radius: 8px; }
+            .commands-table td { white-space: nowrap; }
+            .features { grid-template-columns: 1fr; gap: 16px; }
+            nav .nav-links .nav-link-text { display: none; }
+            .term-blame-grid { gap: 0 8px; }
+            .term-blame-content { font-size: 12px; }
+            .term-blame-content .tag { min-width: 90px; font-size: 10px; }
+            .term-blame-gutter { font-size: 11px; min-width: 24px; }
+            .term-legend span[style*="margin-left: auto"] { margin-left: 0 !important; }
+        }
+
+        @media (max-width: 640px) {
+            .new-way { font-size: clamp(24px, 6.5vw, 40px); }
+            .old-way { font-size: clamp(14px, 3vw, 18px); }
+            .tagline { font-size: clamp(13px, 2.5vw, 16px); }
+            .hero { padding: 40px 0 32px; }
+            .hero-sub { margin-bottom: 28px; max-width: 100%; }
+            .hero-install { max-width: 100%; }
+            .install-box { font-size: clamp(11px, 2vw, 13px); flex-wrap: nowrap; }
+            .install-box .cmd-text { padding: 8px 0 8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+            .install-box .prompt { padding: 8px 0 8px 12px; }
+            .install-box .copy-btn { padding: 6px 8px; }
+            .install-subtitle { font-size: 12px; }
+            .terminal-header { padding: 10px 14px; }
+            .terminal-body { padding: 14px; font-size: clamp(11px, 2vw, 13px); }
+            .term-line { font-size: clamp(11px, 2vw, 13px); }
+            .term-blame-grid { gap: 0 6px; margin: 4px 0; }
+            .term-blame-content { font-size: clamp(11px, 2vw, 13px); }
+            .term-blame-content .tag { min-width: 80px; font-size: 9px; padding: 0 5px; }
+            .term-blame-gutter { font-size: 10px; min-width: 20px; padding-right: 4px; }
+            .term-step { font-size: 10px; margin: 20px 0 6px; }
+            .term-output-key { font-size: 11px; }
+            .term-output-val { font-size: clamp(11px, 2vw, 13px); }
+            .term-legend { padding: 10px 14px; font-size: 10px; flex-wrap: wrap; gap: 4px 12px; }
+            .term-legend span[style*="margin-left: auto"] { margin-left: 0 !important; }
+            nav .nav-links { gap: 10px; }
+            nav .nav-links a { font-size: clamp(11px, 2vw, 13px); }
+            nav .nav-links .nav-install { padding: 4px 10px; font-size: clamp(10px, 1.8vw, 12px); }
+            .harness-section { padding: 48px 0; }
+            .harness-section .harness-label { font-size: clamp(15px, 2.8vw, 20px); }
+            .harness-pill { font-size: clamp(10px, 1.8vw, 12px); padding: 3px 10px; }
+            .harness-pill.more { font-size: clamp(9px, 1.6vw, 11px); }
+            .harness-section .harness-note { font-size: clamp(11px, 2vw, 13px); }
+            .how-section { padding: 48px 0; }
+            .how-section h2 { font-size: clamp(20px, 4vw, 28px); margin-bottom: 32px; }
+            .step h3 { font-size: 15px; }
+            .step p { font-size: 13px; }
+            .convention-section { padding: 48px 0; }
+            .convention-section h2 { font-size: clamp(20px, 4vw, 28px); }
+            .convention-subtitle { font-size: 14px; }
+            .commands-section { padding: 48px 0; }
+            .commands-section h2 { font-size: clamp(20px, 4vw, 28px); }
+            .features-section { padding: 48px 0; }
+            .features-section h2 { font-size: clamp(20px, 4vw, 28px); }
+            .feature { padding: 18px; }
+            .feature h3 { font-size: 14px; }
+            .feature p { font-size: 12px; }
+            .cta-section { padding: 48px 0; }
+            .cta-section h2 { font-size: clamp(20px, 4vw, 28px); }
+            .cta-box { font-size: clamp(11px, 2vw, 14px); padding: 12px 14px; width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+            footer { padding: 32px 0; }
+            footer .footer-oss-cta { font-size: clamp(11px, 2vw, 14px); }
+            footer .footer-links { gap: 14px; font-size: clamp(11px, 2vw, 13px); flex-wrap: wrap; }
+            footer .footer-badges { flex-wrap: wrap; gap: 6px; }
+            footer .badge { font-size: clamp(10px, 1.8vw, 11px); }
+            footer .footer-stars { gap: 8px; }
+            footer .star-link { font-size: clamp(11px, 2vw, 13px); }
+            .commands-table th { padding: 12px 16px; font-size: 11px; }
+            .commands-table td { padding: 10px 16px; font-size: 13px; }
+            .convention-grid { gap: 20px; }
+            .convention-card pre { font-size: clamp(11px, 2vw, 13px); }
+        }
+
+        @media (max-width: 420px) {
+            .new-way { font-size: clamp(20px, 6vw, 32px); letter-spacing: -0.5px; }
+            .old-way { font-size: clamp(11px, 3vw, 15px); }
+            .tagline { font-size: clamp(12px, 3.5vw, 14px); }
+            .hero { padding: 28px 0 24px; }
+            .container { padding: 0 14px; }
+            .install-box { font-size: clamp(10px, 2.5vw, 11px); }
+            .install-box .cmd-text { padding: 6px 0 6px 10px; }
+            .install-box .prompt { padding: 6px 0 6px 10px; }
+            .install-box .copy-btn { padding: 4px 6px; margin: 2px; }
+            nav { padding: 0 14px; }
+            nav .nav-logo { height: 24px; }
+            nav .nav-inner { height: 44px; }
+            nav .nav-links { gap: 6px; }
+            nav .nav-links a { font-size: clamp(10px, 2.5vw, 11px); }
+            nav .nav-links .nav-install { padding: 3px 8px; font-size: clamp(9px, 2.2vw, 10px); }
+            .terminal-body { padding: 12px; }
+            .terminal-header { padding: 8px 12px; }
+            .terminal-dot { width: 10px; height: 10px; }
+            .term-blame-content .tag { min-width: 70px; font-size: 8px; padding: 0 3px; }
+            .term-blame-gutter { font-size: 9px; min-width: 18px; }
+            .term-step { font-size: 9px; margin: 16px 0 4px; gap: 6px; }
+            .term-output-key { font-size: 10px; }
+            .term-legend { padding: 8px 12px; gap: 3px 8px; font-size: 9px; }
+            .harness-pills { gap: 4px; }
+            .harness-pill { font-size: clamp(9px, 2.2vw, 10px); padding: 2px 8px; }
+            .harness-section .harness-label { gap: 6px; }
+            .harness-section .harness-label .check { font-size: 18px; }
+            .features { gap: 12px; }
+            .convention-grid { gap: 14px; }
+            .convention-card .card-header { padding: 12px 14px; font-size: 12px; }
+            .convention-card pre { padding: 14px; }
+            footer .footer-oss-cta { font-size: clamp(10px, 2.5vw, 11px); line-height: 1.6; }
+            footer .footer-stars { gap: 4px; }
+            footer .star-link { font-size: 11px; }
+            footer .footer-links { gap: 8px; font-size: clamp(10px, 2.5vw, 11px); }
+            footer .badge { font-size: 9px; padding: 2px 7px; }
+            .commands-table th { padding: 8px 12px; font-size: 9px; }
+            .commands-table td { padding: 8px 12px; font-size: 11px; }
+            .cta-box { font-size: clamp(10px, 2.5vw, 11px); padding: 10px 12px; }
+            .feature { padding: 14px; }
+            .feature h3 { font-size: 13px; }
+            .feature p { font-size: 11px; }
+            .hero-sub { font-size: clamp(10px, 2.5vw, 11px); margin-bottom: 20px; }
+            .hero-install .install-box { border-radius: 8px; }
+            .term-line { overflow-x: auto; }
+        }
+
+        @media (max-width: 360px) {
+            .container { padding: 0 10px; }
+            nav { padding: 0 10px; }
+            nav .nav-links { gap: 4px; }
+            nav .nav-links a { font-size: 9px; }
+            nav .nav-links .nav-install { padding: 2px 6px; font-size: 8px; }
+            .new-way { font-size: clamp(16px, 5vw, 20px); }
+            .old-way { font-size: 10px; }
+            .tagline { font-size: 11px; }
+            .hero { padding: 20px 0 18px; }
+            .install-box { font-size: 9px; border-radius: 6px; }
+            .install-box .cmd-text { padding: 4px 0 4px 8px; }
+            .install-box .prompt { padding: 4px 0 4px 8px; }
+            .install-box .copy-btn { padding: 3px 5px; }
+            .terminal-dot { width: 8px; height: 8px; }
+            .terminal-header span[style*="margin-left"] { margin-left: 6px !important; font-size: 10px !important; }
+            .terminal-body { padding: 10px; }
+            .term-blame-content .tag { min-width: 60px; font-size: 7px; }
+            .term-blame-gutter { font-size: 8px; min-width: 14px; padding-right: 2px; }
+            .term-legend { padding: 6px 10px; gap: 2px 6px; font-size: 8px; }
+            .term-step { font-size: 8px; margin: 12px 0 3px; }
+            .cta-box { font-size: 9px; padding: 8px 10px; }
+            .harness-pill { padding: 1px 6px; }
+            .convention-card .card-header { padding: 10px 12px; font-size: 11px; }
+            .convention-card pre { padding: 10px; }
+            .commands-table th { padding: 6px 10px; }
+            .commands-table td { padding: 6px 10px; font-size: 10px; }
+            footer .footer-oss-cta { font-size: 10px; }
+            footer .star-link { font-size: 10px; }
+            footer .footer-links { font-size: 10px; gap: 6px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">Seshmark</div>
-            <p class="tagline">Agent-aware Git history. Know which AI wrote every line.</p>
-            <p class="aliases">
-                Also known as:
-                <span>git agentblame</span>
-                <span>agentblame</span>
-                <span>aiblame</span>
+
+    <!-- Nav -->
+    <nav>
+        <div class="nav-inner">
+            <a href="#" class="nav-brand">
+                <img src="img_assets/hero_logo.png" alt="Seshmark" class="nav-logo">
+            </a>
+            <div class="nav-links">
+                <a href="#how-it-works" class="nav-link-text">How It Works</a>
+                <a href="#commands" class="nav-link-text">Commands</a>
+                <a href="https://github.com/seshmark/seshmark" target="_blank">GitHub</a>
+                <a href="#install" class="nav-install">Install</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="install">
+        <div class="container">
+            <div class="old-way">
+                git blame
+                <span class="strikethrough"></span>
+            </div>
+            <div class="new-way">
+                <span class="git">git </span><span class="agent">agent</span><span class="blame">blame</span>
+            </div>
+            <p class="tagline">Know <span class="highlight">which AI</span> wrote every line.</p>
+
+            <p class="hero-sub">Works out of the box with Cursor, Claude, Copilot, OpenCode, Pi and <a href="https://github.com/seshmark/seshmark/blob/main/ADD_A_HARNESS.md" class="hero-link">any AI harness</a>.</p>
+
+            <div class="hero-install">
+                <div class="install-box" id="install-box">
+                    <span class="prompt">$</span>
+                    <span class="cmd-text"><span class="cmd">curl -fsSL https://seshmark.github.io/seshmark/install.sh</span> <span class="cmd-pipe">|</span> <span class="cmd">bash</span></span>
+                    <button class="copy-btn" onclick="copyInstall(event)" title="Copy install command">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    </button>
+                </div>
+                <p class="install-subtitle">macOS · Linux · WSL · One command · No dependencies</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terminal Demo -->
+    <section class="demo-section">
+        <div class="container">
+            <h2>See it in action</h2>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <span style="margin-left: 12px; font-size: 12px; color: var(--text-muted); font-family: var(--font-sans);">@ src/auth.ts</span>
+                </div>
+                <div class="terminal-body">
+
+                    <!-- Step 1: Blame -->
+                    <div class="term-step">Step 1 &nbsp;·&nbsp; See who wrote each line</div>
+                    <div class="term-line" style="margin-bottom: 8px;">
+                        <span class="term-prompt">$</span> <span class="term-cmd">git agentblame src/auth.ts</span>
+                    </div>
+
+                    <div class="term-blame-grid">
+                        <div class="term-blame-line">
+                            <span class="term-blame-gutter active">1</span>
+                            <span class="term-blame-content"><span class="tag human">[human]</span> const express = require('express');</span>
+                        </div>
+                        <div class="term-blame-line">
+                            <span class="term-blame-gutter">2</span>
+                            <span class="term-blame-content"><span class="tag cursor">[cursor│abc123]</span> import { oauth } from './oauth';</span>
+                        </div>
+                        <div class="term-blame-line">
+                            <span class="term-blame-gutter">3</span>
+                            <span class="term-blame-content"><span class="tag claude">[claude│xyz789]</span> function validateToken(token) {</span>
+                        </div>
+                        <div class="term-blame-line">
+                            <span class="term-blame-gutter">4</span>
+                            <span class="term-blame-content"><span class="tag human">[human]</span> &nbsp;&nbsp;if (!token) return null;</span>
+                        </div>
+                        <div class="term-blame-line">
+                            <span class="term-blame-gutter">5</span>
+                            <span class="term-blame-content"><span class="tag cursor">[cursor│abc123]</span> &nbsp;&nbsp;const hash = crypto.sha256(token);</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Query -->
+                    <div class="term-step">Step 2 &nbsp;·&nbsp; Search by agent, model, or file</div>
+                    <div class="term-line" style="margin-bottom: 8px;">
+                        <span class="term-prompt">$</span> <span class="term-cmd">seshmark query --agent cursor --path auth</span>
+                    </div>
+
+                    <div class="term-output-grid">
+                        <span class="term-output-key">a3f9d2e</span>
+                        <span class="term-output-val"><span class="agent-cursor">cursor</span> · claude-sonnet · 2026-05-07 · feat: implement OAuth2</span>
+                        <span class="term-output-key">b7c4e1f</span>
+                        <span class="term-output-val"><span class="agent-cursor">cursor</span> · gpt-4o · 2026-05-08 · fix: token refresh</span>
+                    </div>
+
+                    <!-- Step 3: Resume -->
+                    <div class="term-step">Step 3 &nbsp;·&nbsp; Resume the exact AI session</div>
+                    <div class="term-line" style="margin-bottom: 8px;">
+                        <span class="term-prompt">$</span> <span class="term-cmd">seshmark resume a3f9d2e</span>
+                    </div>
+                    <div class="term-line">
+                        <span class="term-dim">→ Resuming cursor:chat-abc123 ...</span>
+                    </div>
+
+                </div>
+                <!-- Color legend -->
+                <div class="term-legend">
+                    <span class="term-legend-item">
+                        <span class="term-legend-dot human"></span>
+                        human
+                    </span>
+                    <span class="term-legend-item">
+                        <span class="term-legend-dot cursor"></span>
+                        cursor
+                    </span>
+                    <span class="term-legend-item">
+                        <span class="term-legend-dot claude"></span>
+                        claude
+                    </span>
+                    <span style="color: #484F58; margin-left: auto;">git agentblame · seshmark query · seshmark resume</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-section" id="how-it-works">
+        <div class="container">
+            <h2>How it works</h2>
+            <div class="steps">
+                <div class="step">
+                    <h3>Install once</h3>
+                    <p>Run the install script. Seshmark adds a Git hook that auto-tags every commit. Zero config needed.</p>
+                </div>
+                <div class="step">
+                    <h3>Use your AI tools</h3>
+                    <p>Work with <code>cursor</code>, <code>claude</code>, <code>copilot</code>, or any tool. Commits get tagged with <code>AI-Agent</code>, <code>AI-Session</code>, and <code>AI-Model</code> trailers automatically.</p>
+                </div>
+                <div class="step">
+                    <h3>Query anytime</h3>
+                    <p>Run <code>git agentblame</code> to see who wrote each line. Query by agent, model, or file. Resume sessions. All from Git.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Convention -->
+    <section class="convention-section">
+        <div class="container">
+            <h2>The Seshmark Convention</h2>
+            <p class="convention-subtitle">AI commits include Git trailers. It works even without the CLI installed.</p>
+            <div class="convention-grid">
+                <div class="convention-card">
+                    <div class="card-header">
+                        <span class="dot"></span>
+                        Commit message
+                    </div>
+                    <pre><span class="commit-type">feat:</span> implement OAuth2 middleware
+
+<span class="comment"># Seshmark adds these automatically:</span>
+<span class="trailer-key">Seshmark-Version:</span> <span class="trailer-val">1.0.0</span>
+<span class="trailer-key">AI-Session:</span> <span class="trailer-val">cursor:chat-abc123</span>
+<span class="trailer-key">AI-Agent:</span> <span class="trailer-val">cursor</span>
+<span class="trailer-key">AI-Model:</span> <span class="trailer-val">claude-sonnet-4-20250514</span></pre>
+                </div>
+                <div class="convention-card">
+                    <div class="card-header">
+                        <span class="dot"></span>
+                        Branch inference
+                    </div>
+                    <pre><span class="comment"># Working on a branch? Seshmark infers the agent.</span>
+<span class="comment"># No env vars or config needed.</span>
+
+<span class="trailer-key">git checkout -b</span> <span class="trailer-val">claude/auth-refactor</span>
+
+<span class="comment"># Commits on this branch are automatically tagged:</span>
+<span class="trailer-key">AI-Agent:</span> <span class="trailer-val">claude</span>
+
+<span class="comment"># Works with any naming pattern:</span>
+<span class="trailer-val">cursor/fix-login</span>
+<span class="trailer-val">copilot/api-tests</span></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands -->
+    <section class="commands-section" id="commands">
+        <div class="container">
+            <h2>Commands</h2>
+            <div class="commands-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What it does</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>git agentblame &lt;file&gt;</td>
+                            <td>Show which AI wrote each line</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark stats</td>
+                            <td>AI usage report by agent, model, and file</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark query [filters]</td>
+                            <td>Search AI-tagged commits</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark who [commit]</td>
+                            <td>Show agent, model, and session for a commit</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark context &lt;commit&gt;</td>
+                            <td>Reconstruct the session context</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark log &lt;session&gt;</td>
+                            <td>List all commits in a session</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark resume &lt;session&gt;</td>
+                            <td>Reopen the AI session that wrote the code</td>
+                        </tr>
+                        <tr>
+                            <td>seshmark status</td>
+                            <td>Show active session</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Harnesses -->
+    <section class="harness-section">
+        <div class="container">
+            <div class="harness-label">
+                <span class="check">✓</span>
+                Works with every AI coding harness
+            </div>
+            <div class="harness-pills">
+                <span class="harness-pill cursor">cursor</span>
+                <span class="harness-pill claude">claude</span>
+                <span class="harness-pill copilot">copilot</span>
+                <span class="harness-pill aider">aider</span>
+                <span class="harness-pill opencode">opencode</span>
+                <span class="harness-pill pi">pi</span>
+                <span class="harness-pill more">+ <a href="https://github.com/seshmark/seshmark/blob/main/ADD_A_HARNESS.md" class="harness-link">any tool</a> that sets <code>SESHMARK_*</code> env vars</span>
+            </div>
+            <div class="harness-note">
+                100% client-side · No servers · No APIs · No telemetry · Your data stays on your machine
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <div class="container">
+            <h2>Built for the way you work</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>Zero Configuration</h3>
+                    <p>Install once. The Git hook auto-tags every commit made by any AI tool. <strong>No servers, no APIs, no config files</strong> — everything runs locally on your machine. Your data never leaves.</p>
+                </div>
+                <div class="feature">
+                    <h3>Tool Agnostic</h3>
+                    <p>Works with <code>cursor</code>, <code>claude</code>, <code>copilot</code>, <code>aider</code>, <code>opencode</code>, <code>pi</code>, and <a href="https://github.com/seshmark/seshmark/blob/main/ADD_A_HARNESS.md" class="feature-link">any tool that sets <code>SESHMARK_*</code> env vars</a>. No vendor lock-in. Bring your own harness.</p>
+                </div>
+                <div class="feature">
+                    <h3>Git Native</h3>
+                    <p>The convention uses standard Git trailers. It works without Seshmark installed — just type the trailers by hand and everything still reads them.</p>
+                </div>
+                <div class="feature">
+                    <h3>Branch Inference</h3>
+                    <p>Working on <code>claude/auth-refactor</code>? Commits are auto-tagged <code>AI-Agent: claude</code> even without explicit session tracking.</p>
+                </div>
+                <div class="feature">
+                    <h3>Session Resumption</h3>
+                    <p>Found who wrote a line? Resume the exact session. <code>seshmark resume HEAD</code> opens the AI tool on the right conversation.</p>
+                </div>
+                <div class="feature">
+                    <h3>Orchestrator Ready</h3>
+                    <p>Every command supports <code>--format json</code>. AI agents can query, blame, and resume sessions programmatically.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Get started</h2>
+            <p>One command. No dependencies. Works with every AI tool.</p>
+
+            <div class="cta-box" onclick="copyInstall(this)">
+                <span class="comment"># install seshmark</span><br>
+                <span class="prompt">$ </span>curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
+            </div>
+
+            <br><br>
+
+            <div class="cta-box" onclick="copyInstall(this)">
+                <span class="comment"># or try it instantly in any git repo</span><br>
+                <span class="prompt">$ </span>git clone https://github.com/seshmark/demo<br>
+                <span class="prompt">$ </span>cd demo && git agentblame src/api.ts
+            </div>
+
+            <p class="cta-or">
+                <a href="https://github.com/seshmark/seshmark">View on GitHub</a> ·
+                <a href="https://github.com/seshmark/seshmark/blob/main/README.md">Read the docs</a>
             </p>
-        </header>
-
-        <div class="install">
-            <div class="install-label">Install</div>
-            <div class="install-code" onclick="navigator.clipboard.writeText(this.textContent);this.style.borderColor='var(--accent-bright)';setTimeout(()=>this.style.borderColor='',1000)">
-curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
-            </div>
-            <p class="install-hint">Works on macOS, Linux, and WSL. One command. No dependencies.</p>
         </div>
+    </section>
 
-        <div class="terminal">
-            <div class="terminal-header">
-                <div class="terminal-dot red"></div>
-                <div class="terminal-dot yellow"></div>
-                <div class="terminal-dot green"></div>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <!-- Primary CTA: Contributions welcome -->
+            <div class="footer-oss-cta">
+                <span class="oss-heart">&lt;3</span>
+                <span>Open source and community-driven. </span>
+                <a href="https://github.com/seshmark/seshmark/blob/main/CONTRIBUTING.md">Contributions welcome</a>
+                <span> - every PR, issue, and resolver script makes this better.</span>
             </div>
-            <div class="terminal-body">
-                <div class="terminal-line">
-                    <span class="terminal-prompt">$</span>
-                    <span class="terminal-command"> git agentblame src/auth.ts</span>
-                </div>
-                <div class="terminal-line terminal-output">
-                    <span class="agent-human">[human&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span> const express = require('express');
-                </div>
-                <div class="terminal-line terminal-output">
-                    <span class="agent-cursor">[cursor|abc123|cursor]</span> import { oauth } from './oauth';
-                </div>
-                <div class="terminal-line terminal-output">
-                    <span class="agent-claude">[claude|xyz789|claude]</span> function validateToken(token: string) {
-                </div>
-                <div class="terminal-line">
-                    <span class="terminal-prompt">$</span>
-                    <span class="terminal-command"> seshmark query --agent cursor --path auth</span>
-                </div>
-                <div class="terminal-line terminal-output">
-                    a3f9d2e | 2026-05-07 | cursor | claude-sonnet | feat: implement OAuth2
-                </div>
-            </div>
-        </div>
 
-        <div class="features">
-            <div class="feature">
-                <h3>Zero Configuration</h3>
-                <p>Install once. The Git hook auto-tags every commit made by Cursor, Claude Code, Copilot, or any tool that sets <code>SESHMARK_*</code> env vars.</p>
+            <!-- Social proof: GitHub star count + badges -->
+            <div class="footer-stars">
+                <a href="https://github.com/seshmark/seshmark/stargazers" class="star-link">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align: -2px;">
+                        <path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z" fill="currentColor"/>
+                    </svg>
+                    <span class="star-count">Star on GitHub</span>
+                </a>
+                <span class="gh-sep">·</span>
+                <a href="https://github.com/seshmark/seshmark/issues" class="star-link">Report issue</a>
+                <span class="gh-sep">·</span>
+                <a href="https://github.com/seshmark/seshmark/discussions" class="star-link">Discussions</a>
             </div>
-            <div class="feature">
-                <h3>Branch Inference</h3>
-                <p>Working on <code>claude/feature-auth</code>? Commits are automatically tagged with <code>AI-Agent: claude</code> even without explicit session tracking.</p>
+
+            <!-- Creator credit -->
+            <div class="footer-credit">
+                Made with
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="#F85149" style="vertical-align: -2px;">
+                    <path d="M4.25 2.5a3.25 3.25 0 00-2.25 5.6L8 14l6-5.9a3.25 3.25 0 00-4.5-4.7L8 4.8l-1.5-1.5a3.25 3.25 0 00-2.25-.8z"/>
+                </svg>
+                by <a href="https://github.com/SahilChoudhary22" class="footer-creator">Sahil Choudhary</a>
             </div>
-            <div class="feature">
-                <h3>Tool Agnostic</h3>
-                <p>No vendor lock-in. Works with Cursor, Claude Code, OpenCode, Codex, Aider, GitHub Copilot, or any future AI coding tool.</p>
+
+            <!-- Links + badges -->
+            <div class="footer-links">
+                <a href="https://github.com/seshmark/seshmark">GitHub</a>
+                <a href="https://github.com/seshmark/seshmark/blob/main/README.md">Docs</a>
+                <a href="https://github.com/seshmark/seshmark/tree/main/vscode-extension">VS&nbsp;Code&nbsp;Extension</a>
+                <a href="https://github.com/seshmark/seshmark/releases">Releases</a>
+                <a href="https://github.com/seshmark/seshmark/blob/main/LICENSE">MIT License</a>
             </div>
-            <div class="feature">
-                <h3>Orchestrator Ready</h3>
-                <p>Every command outputs <code>--format json</code>. Autonomous agents can trace code back to its original session and resume or reconstruct context.</p>
-            </div>
-            <div class="feature">
-                <h3>VS Code Extension</h3>
-                <p>See <code>[cursor]</code>, <code>[claude]</code> inline in your editor gutter. Hover for session details. Toggle on/off from the status bar.</p>
-            </div>
-            <div class="feature">
-                <h3>Git Native</h3>
-                <p>The convention works without any tool installed. Just add <code>Seshmark-Version</code>, <code>AI-Session</code>, <code>AI-Agent</code> trailers to commit messages by hand.</p>
+            <div class="footer-badges">
+                <span class="badge"><span class="badge-dot">◆</span> Go</span>
+                <span class="badge"><span class="badge-dot">◆</span> Git Trailers</span>
+                <span class="badge"><span class="badge-dot">◆</span> No Vendor APIs</span>
+                <span class="badge"><span class="badge-dot">◆</span> No Central DB</span>
+                <span class="badge"><span class="badge-dot">◆</span> 100% Client-Side</span>
             </div>
         </div>
+    </footer>
 
-        <footer>
-            <p>
-                <a href="https://github.com/seshmark/seshmark">GitHub</a> ·
-                <a href="https://github.com/seshmark/seshmark/blob/main/README.md">Docs</a> ·
-                <a href="https://github.com/seshmark/seshmark/tree/main/vscode-extension">VS Code Extension</a>
-            </p>
-            <p style="margin-top: 12px; font-size: 12px;">MIT License · No vendor APIs · No central database</p>
-        </footer>
-    </div>
+    <script>
+    function copyInstall(event) {
+        event.stopPropagation();
+        var btn = event.currentTarget;
+        var box = btn.closest('.install-box');
+        // Get the command text without the $ prompt
+        var cmdSpan = box.querySelector('.cmd-text');
+        var cmd = cmdSpan.textContent.trim();
+        navigator.clipboard.writeText(cmd).then(function() {
+            box.classList.add('copied');
+            var icon = btn.querySelector('svg');
+            if (icon) {
+                icon.innerHTML = '<polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+            }
+            setTimeout(function() {
+                box.classList.remove('copied');
+                if (icon) {
+                    icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+                }
+            }, 1800);
+        });
+    }
+    </script>
 </body>
 </html>

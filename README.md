@@ -1,13 +1,15 @@
-# Seshmark
+<!-- Seshmark Brand Header -->
+<p align="center">
+  <img src="img_assets/favicon.png" alt="Seshmark" width="80">
+</p>
 
-> `git agentblame` — like `git blame`, but shows which AI (Cursor, Claude, Copilot) wrote each line and lets you resume the exact session.
+<h1 align="center">Seshmark</h1>
 
-<!-- Replace with your actual GIF: -->
-<!-- ![Demo](docs/demo.gif) -->
+<p align="center">
+  <img src="img_assets/hero_image.png" alt="git agentblame — Know which AI wrote every line" width="100%">
+</p>
 
-[![Version](https://img.shields.io/github/v/release/seshmark/seshmark?color=3fb950&label=version)](https://github.com/seshmark/seshmark/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Go Version](https://img.shields.io/badge/go-%3E%3D1.21-blue)](go.mod)
+---
 
 ```bash
 curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
