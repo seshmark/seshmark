@@ -1,0 +1,17 @@
+#!/bin/bash
+# Seshmark resolver for Cursor
+# 
+# Install:
+#   cp cursor ~/.local/share/seshmark/resolvers/cursor
+#   chmod +x ~/.local/share/seshmark/resolvers/cursor
+#
+# This resolver opens the Cursor editor. Since Cursor doesn't expose
+# a direct session URL, it opens the project directory in Cursor.
+# Optionally, you can enhance this to search ~/.cursor/ for the
+# matching chat file.
+
+SESSION_ID="$1"
+
+# Cursor's CLI doesn't directly accept session IDs,
+# but you can open the project directory
+cursor . 2>/dev/null || open -a "Cursor" . 2>/dev/null || echo "Cursor not found. Install: https://cursor.com"
