@@ -192,3 +192,48 @@ jobs:
 
       - name: All harness tests passed
         run: echo "🎉 All ${{ matrix.os }} harness integration tests passed!"
+
+  test-harness-configs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify all harness example files exist
+        run: |
+          for file in \
+            examples/harnesses/pi/SKILL.md \
+            examples/harnesses/claude-code/SKILL.md \
+            examples/harnesses/opencode/SKILL.md \
+            examples/harnesses/cursor/.cursorrules \
+            examples/harnesses/aider/wrapper.sh \
+            examples/harnesses/generic/wrapper.sh HARNESS_EXAMPLES.md; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing: $file"
+              exit 1
+            fi
+            echo "✅ $file"
+          done
+
+      - name: Verify skill files have correct agent names
+        run: |
+          grep -q 'SESHMARK_AGENT="pi"' examples/harnesses/pi/SKILL.md || exit 1
+          grep -q 'SESHMARK_AGENT="claude"' examples/harnesses/claude-code/SKILL.md || exit 1
+          grep -q 'SESHMARK_AGENT="opencode"' examples/harnesses/opencode/SKILL.md || exit 1
+          grep -q 'SESHMARK_AGENT="cursor"' examples/harnesses/cursor/.cursorrules || exit 1
+          echo "✅ All skill files reference correct agent names"
+
+      - name: Verify wrapper scripts are valid shell
+        run: |
+          bash -n examples/harnesses/aider/wrapper.sh || exit 1
+          bash -n examples/harnesses/generic/wrapper.sh || exit 1
+          echo "✅ Wrapper scripts have valid shell syntax"
+
+      - name: Verify HARNESS_EXAMPLES.md links to all harnesses
+        run: |
+          for harness in pi claude-code opencode cursor aider codex copilot; do
+            grep -q "$harness" HARNESS_EXAMPLES.md || exit 1
+          done
+          echo "✅ HARNESS_EXAMPLES.md covers all harnesses"
+
+      - name: All harness config tests passed
+        run: echo "🎉 All harness config tests passed!"

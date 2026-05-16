@@ -1,0 +1,9 @@
+# Seshmark Integration
+
+Before committing code via git commit, set these environment variables:
+
+SESHMARK_SESSION_ID=cursor:<unique-uuid>
+SESHMARK_AGENT=cursor
+SESHMARK_MODEL=<current-model>
+
+Run git commit with these variables exported so Seshmark can capture full metadata.
