@@ -220,7 +220,7 @@ jobs:
           grep -q 'SESHMARK_AGENT="pi"' examples/harnesses/pi/SKILL.md || exit 1
           grep -q 'SESHMARK_AGENT="claude"' examples/harnesses/claude-code/SKILL.md || exit 1
           grep -q 'SESHMARK_AGENT="opencode"' examples/harnesses/opencode/SKILL.md || exit 1
-          grep -q 'SESHMARK_AGENT="cursor"' examples/harnesses/cursor/.cursorrules || exit 1
+          grep -q 'SESHMARK_AGENT=cursor' examples/harnesses/cursor/.cursorrules || exit 1
           echo "✅ All skill files reference correct agent names"
 
       - name: Verify wrapper scripts are valid shell
