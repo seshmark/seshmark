@@ -1,0 +1,32 @@
+#!/bin/bash
+# Seshmark resolver for OpenCode
+#
+# Install:
+#   seshmark resolver install opencode ./opencode
+#
+# OpenCode uses --session flag to resume a specific session.
+# If a session ID is provided, attempt to resume it.
+# Otherwise, show the session list.
+
+SESSION_ID="$1"
+
+if [ -z "$SESSION_ID" ]; then
+  echo "Usage: seshmark resume opencode:<session-id>"
+  echo ""
+  echo "Listing recent OpenCode sessions..."
+  opencode session list --max-count 10
+  echo ""
+  echo "To resume a specific session:"
+  echo "  opencode --session <session-id>"
+  exit 1
+fi
+
+if command -v opencode &>/dev/null; then
+  echo "Resuming OpenCode session: $SESSION_ID"
+  opencode --session "$SESSION_ID"
+else
+  echo "OpenCode not found in PATH."
+  echo "Install: npm install -g opencode-ai"
+  echo ""
+  echo "Session ID: $SESSION_ID"
+fi

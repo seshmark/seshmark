@@ -1,0 +1,34 @@
+#!/bin/bash
+# Seshmark resolver for Pi
+#
+# Install:
+#   seshmark resolver install pi ./pi
+#
+# Pi sessions are stored at ~/.pi/agent/sessions/
+# Use pi --session <path|id> to resume a specific session.
+# Use pi -r to browse past sessions interactively.
+
+SESSION_ID="$1"
+
+if [ -z "$SESSION_ID" ]; then
+  echo "Usage: seshmark resume pi:<session-id>"
+  echo ""
+  echo "Browse Pi sessions:"
+  echo "  pi -r"
+  echo ""
+  echo "Or continue the most recent session:"
+  echo "  pi -c"
+  exit 1
+fi
+
+if command -v pi &>/dev/null; then
+  # Pi can open a session by ID or by file path
+  # First try the session ID directly
+  echo "Resuming Pi session: $SESSION_ID"
+  pi --session "$SESSION_ID"
+else
+  echo "Pi not found in PATH."
+  echo "Install: https://github.com/earendil-works/pi"
+  echo ""
+  echo "Session ID: $SESSION_ID"
+fi
