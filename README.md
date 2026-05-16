@@ -1,6 +1,6 @@
 <!--
 ╔══════════════════════════════════════════════════════╗
-║  Seshmark — git agentblame                          ║
+║  Seshmark - git agentblame                          ║
 ║  Know which AI wrote every line.                    ║
 ╚══════════════════════════════════════════════════════╝
 -->
@@ -12,7 +12,7 @@
 
 <h3 align="center">
   Know which AI (<code>cursor</code>, <code>claude</code>, <code>copilot</code>, <code>pi</code>) wrote every line.<br>
-  <code>git agentblame</code> — like <code>git blame</code>, but for AI agents.
+  <code>git agentblame</code> - like <code>git blame</code>, but for AI agents.
 </h3>
 
 <p align="center">
@@ -30,7 +30,7 @@
 <br>
 
 <p align="center">
-  <img src="img_assets/hero_image_v2.png" alt="git agentblame — Know which AI wrote every line" width="100%">
+  <img src="img_assets/hero_image_v2.png" alt="git agentblame - Know which AI wrote every line" width="100%">
 </p>
 
 <br>
@@ -61,7 +61,7 @@ cd demo
 git agentblame src/auth.ts
 ```
 
-You'll see output like this — every line tagged with the AI agent that wrote it:
+You'll see output like this - every line tagged with the AI agent that wrote it:
 
 ```
 [human]          const express = require('express');
@@ -76,7 +76,7 @@ You'll see output like this — every line tagged with the AI agent that wrote i
 
 Seshmark is a **zero-infrastructure, tool-agnostic convention** that links AI coding agent sessions to Git commits.
 
-When you (or your AI agent) make a commit, seshmark silently adds metadata — which agent, which model, which session — as standard Git trailers:
+When you (or your AI agent) make a commit, seshmark silently adds metadata - which agent, which model, which session - as standard Git trailers:
 
 ```
 Seshmark-Version: 1.0.0
@@ -89,19 +89,19 @@ Later, you can **blame**, **query**, and **resume** any AI session. No config fi
 
 ---
 
-## How It Works — The Magic
+## How It Works - The Magic
 
 1. **Install once.** Seshmark adds a silent Git hook. That's it.
 
-2. **Use your AI tools as you normally would.** Cursor, Claude Code, Copilot, Pi, Aider, OpenCode — any of them. Every commit gets invisibly stamped with AI metadata. You won't even notice it happening.
+2. **Use your AI tools as you normally would.** Cursor, Claude Code, Copilot, Pi, Aider, OpenCode - any of them. Every commit gets invisibly stamped with AI metadata. You won't even notice it happening.
 
 3. **Run `git agentblame` whenever you're curious.** Suddenly every line has a story. Which AI wrote it? What session? What model?
 
-4. **Dig deeper — query, resume, share stats.** It's all there.
+4. **Dig deeper - query, resume, share stats.** It's all there.
 
-Seshmark figures out which AI tool is running automatically — whether through a session you started (`seshmark track`), environment variables the tool sets, your branch name (`pi/feature`), or by detecting the tool's process directly. You don't need to think about it. It just works.
+Seshmark figures out which AI tool is running automatically - whether through a session you started (`seshmark track`), environment variables the tool sets, your branch name (`pi/feature`), or by detecting the tool's process directly. You don't need to think about it. It just works.
 
-> *For the curious — [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) pulls back the curtain on how detection works and how to add support for any tool.*
+> *For the curious - [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) pulls back the curtain on how detection works and how to add support for any tool.*
 
 ---
 
@@ -144,7 +144,7 @@ blame:
 
 ## Supported Tools
 
-seshmark works with every AI coding harness — no special integration needed. Here's how they're detected:
+seshmark works with every AI coding harness - no special integration needed. Here's how they're detected:
 
 | Tool | Detection Method | Metadata Captured |
 |------|-----------------|-------------------|
@@ -154,7 +154,7 @@ seshmark works with every AI coding harness — no special integration needed. H
 | **Copilot** | Branch name (`copilot/feature`) or env vars | agent + session + model |
 | **Aider** | Branch name (`aider/feature`) or process detection | agent |
 | **OpenCode** | Branch name (`opencode/feature`) or env vars | agent + session + model |
-| **Any CLI tool** | Process detection — walks parent processes automatically | agent |
+| **Any CLI tool** | Process detection - walks parent processes automatically | agent |
 | **Any tool with env vars** | SESHMARK_SESSION_ID + SESHMARK_AGENT | session + agent + model |
 
 See [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) to add support for any tool in 3 ways.
