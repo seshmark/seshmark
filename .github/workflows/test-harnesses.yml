@@ -206,7 +206,8 @@ jobs:
             examples/harnesses/opencode/SKILL.md \
             examples/harnesses/cursor/.cursorrules \
             examples/harnesses/aider/wrapper.sh \
-            examples/harnesses/generic/wrapper.sh HARNESS_EXAMPLES.md; do
+            examples/harnesses/generic/wrapper.sh \
+            HARNESS_EXAMPLES.md; do
             if [ ! -f "$file" ]; then
               echo "❌ Missing: $file"
               exit 1
