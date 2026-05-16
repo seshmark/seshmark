@@ -20,13 +20,27 @@ Seshmark is designed to be **harness-agnostic**: you don't need to wait for us t
 
 ## How It Works (30 Seconds)
 
-Every time `git commit` runs, Seshmark's hook checks for three things:
+Every time `git commit` runs, Seshmark's hook fires and detects the AI agent using this priority order:
 
-1. **Environment variables** → `SESHMARK_SESSION_ID`, `SESHMARK_AGENT`, `SESHMARK_MODEL`
-2. **Branch name** → e.g., `claude/feature-auth` infers `AI-Agent: claude`
-3. **Active `seshmark track` session**
+| Priority | Method | What it captures | Set by |
+|----------|--------|-----------------|--------|
+| **1** | `seshmark track` session file | session + agent + model | You (manual) |
+| **2** | `SESHMARK_*` env vars | session + agent + model | Your AI tool |
+| **3** | `AI_*` env vars (legacy) | session + agent + model | Older tools |
+| **4** | Branch name | agent only | `pi/feature` → `pi` |
+| **5** | Parent process detection | agent only | Any CLI tool running `git` |
+| **6** | Nothing found | → tagged as `[human]` | — |
 
-If any of these are set, Seshmark adds Git trailers to the commit automatically.
+The **first match wins**. So if a tool sets `SESHMARK_SESSION_ID`, that takes priority over branch naming or process detection.
+
+Once detected, Seshmark appends Git trailers to the commit message automatically:
+
+```
+Seshmark-Version: 1.0.0
+AI-Session: my-tool:sess-001
+AI-Agent: my-tool
+AI-Model: gpt-4o
+```
 
 That's it. No config file. No import. No central server.
 

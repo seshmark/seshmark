@@ -79,57 +79,48 @@
         }
 
         nav .nav-inner {
-            transition: height 0.2s ease;
-        }
-
-        nav .nav-inner {
-            max-width: 920px;
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 52px;
+            height: 60px;
+            transition: height 0.2s ease;
         }
 
         nav .nav-brand {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
-            color: var(--text);
-            font-weight: 700;
-            font-size: 15px;
+            flex-shrink: 0;
         }
 
-        nav .nav-brand .prompt {
-            color: var(--green);
-            font-family: var(--font-mono);
-            font-weight: 700;
-        }
-
-        nav .nav-brand .name {
-            font-family: var(--font-sans);
-            font-weight: 800;
-            color: var(--green);
-        }
-
-        nav .nav-logo {
-            height: 34px;
+        nav .nav-icon {
+            height: 32px;
             width: auto;
             display: block;
+        }
+
+        nav .nav-wordmark {
+            font-family: var(--font-sans);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--green);
+            letter-spacing: -0.3px;
         }
 
         nav .nav-links {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 24px;
             transition: gap 0.2s ease;
         }
 
         nav .nav-links a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             transition: color 0.2s;
         }
@@ -141,16 +132,20 @@
         nav .nav-links .nav-install {
             background: var(--green);
             color: var(--bg);
-            padding: 5px 14px;
+            padding: 6px 16px;
             border-radius: 6px;
             font-weight: 600;
-            font-size: 12px;
-            transition: background 0.2s;
+            font-size: 13px;
+            transition: background 0.2s, transform 0.15s;
         }
 
         nav .nav-links .nav-install:hover {
             background: var(--green-bright);
             color: var(--bg);
+        }
+
+        nav .nav-links .nav-install:active {
+            transform: scale(0.96);
         }
 
         /* ============================================
@@ -433,16 +428,33 @@
             padding: 0 0 80px;
         }
 
-        .demo-section h2 {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .terminal-try {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-family: var(--font-mono);
+            font-size: 13px;
             color: var(--text-muted);
-            text-align: center;
-            margin-bottom: 24px;
         }
 
-        .terminal {
+        .terminal-prompt-icon {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .terminal-try-cmd {
+            color: var(--text-bright);
+            font-weight: 600;
+            padding: 2px 10px;
+            background: var(--code-bg);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .demo-section .terminal {
             background: var(--code-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -480,56 +492,14 @@
         .term-cmd { color: var(--text); }
         .term-comment { color: #484F58; font-style: normal; }
         .term-dim { color: var(--text-muted); }
-        .agent-human { color: var(--human); }
-        .agent-cursor { color: var(--cursor); }
-        .agent-claude { color: var(--claude); }
-        .term-hash { color: var(--text-muted); }
-        .term-sep { color: var(--border); }
 
-        /* Step label within terminal */
-        .term-step {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 28px 0 8px;
-            font-family: var(--font-sans);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
+        /* Terminal output spacing */
+        .term-line + .term-blame-grid {
+            margin-top: 4px;
         }
 
-        .term-step::before {
-            content: '▶';
-            font-size: 8px;
-            color: var(--green);
-            flex-shrink: 0;
-        }
-
-        .term-step::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .term-step:first-of-type {
-            margin-top: 0;
-        }
-
-        .term-step + .term-line {
-            margin-bottom: 12px !important;
-        }
-
-        /* Add spacing after each step output block */
-        .term-blame-grid,
-        .term-output-grid {
-            margin-bottom: 8px;
-        }
-
-        .term-step:last-of-type {
-            margin-top: 24px;
+        .term-blame-grid + .term-line {
+            margin-top: 20px;
         }
 
         /* Blame output with gutter lines */
@@ -537,7 +507,7 @@
             display: grid;
             grid-template-columns: auto 1fr;
             gap: 0 12px;
-            margin: 8px 0;
+            margin: 4px 0;
         }
 
         .term-blame-line {
@@ -577,59 +547,24 @@
             white-space: nowrap;
         }
 
-        .term-blame-content .tag.human { color: var(--human); }
-        .term-blame-content .tag.cursor { color: var(--cursor); }
-        .term-blame-content .tag.claude { color: var(--claude); }
+        .term-blame-content .tag.human { color: var(--human); border: 1px solid rgba(110,118,129,0.15); }
+        .term-blame-content .tag.cursor { color: var(--cursor); border: 1px solid rgba(255,153,0,0.15); }
+        .term-blame-content .tag.claude { color: var(--claude); border: 1px solid rgba(204,120,92,0.15); }
 
-        /* Color legend */
-        .term-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px 16px;
-            padding: 12px 20px;
-            border-top: 1px solid var(--border);
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--text-muted);
-            background: var(--code-bg);
-            border-radius: 0 0 12px 12px;
-        }
-
-        .term-legend-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .term-legend-dot {
+        /* Terminal cursor blink */
+        .term-cursor {
+            display: inline-block;
             width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
+            height: 16px;
+            background: var(--green);
+            vertical-align: text-bottom;
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
         }
 
-        .term-legend-dot.human { background: var(--human); }
-        .term-legend-dot.cursor { background: var(--cursor); }
-        .term-legend-dot.claude { background: var(--claude); }
-
-        .term-output-grid {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 0 8px;
-            margin: 4px 0;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            line-height: 2;
-        }
-
-        .term-output-key {
-            color: var(--text-muted);
-            text-align: right;
-            font-size: 12px;
-        }
-
-        .term-output-val {
-            color: var(--text);
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
 
         /* ============================================
@@ -1104,8 +1039,9 @@
             .tagline { font-size: 16px; }
             .hero-sub { font-size: 12px; }
             .hero { padding: 56px 0 48px; }
-            nav .nav-logo { height: 32px; }
-            nav .nav-inner { height: 48px; }
+            nav .nav-icon { height: 28px; }
+            nav .nav-wordmark { font-size: 19px; }
+            nav .nav-inner { height: 54px; }
             nav .nav-links { gap: 14px; }
             .term-blame-content .tag { min-width: 100px; font-size: 11px; }
         }
@@ -1124,7 +1060,6 @@
             .term-blame-content { font-size: 12px; }
             .term-blame-content .tag { min-width: 90px; font-size: 10px; }
             .term-blame-gutter { font-size: 11px; min-width: 24px; }
-            .term-legend span[style*="margin-left: auto"] { margin-left: 0 !important; }
         }
 
         @media (max-width: 640px) {
@@ -1146,14 +1081,9 @@
             .term-blame-content { font-size: clamp(11px, 2vw, 13px); }
             .term-blame-content .tag { min-width: 80px; font-size: 9px; padding: 0 5px; }
             .term-blame-gutter { font-size: 10px; min-width: 20px; padding-right: 4px; }
-            .term-step { font-size: 10px; margin: 20px 0 6px; }
-            .term-output-key { font-size: 11px; }
-            .term-output-val { font-size: clamp(11px, 2vw, 13px); }
-            .term-legend { padding: 10px 14px; font-size: 10px; flex-wrap: wrap; gap: 4px 12px; }
-            .term-legend span[style*="margin-left: auto"] { margin-left: 0 !important; }
             nav .nav-links { gap: 10px; }
             nav .nav-links a { font-size: clamp(11px, 2vw, 13px); }
-            nav .nav-links .nav-install { padding: 4px 10px; font-size: clamp(10px, 1.8vw, 12px); }
+            nav .nav-links .nav-install { padding: 5px 12px; font-size: clamp(10px, 1.8vw, 12px); }
             .harness-section { padding: 48px 0; }
             .harness-section .harness-label { font-size: clamp(15px, 2.8vw, 20px); }
             .harness-pill { font-size: clamp(10px, 1.8vw, 12px); padding: 3px 10px; }
@@ -1200,8 +1130,9 @@
             .install-box .prompt { padding: 6px 0 6px 10px; }
             .install-box .copy-btn { padding: 4px 6px; margin: 2px; }
             nav { padding: 0 14px; }
-            nav .nav-logo { height: 24px; }
-            nav .nav-inner { height: 44px; }
+            nav .nav-icon { height: 22px; }
+            nav .nav-wordmark { font-size: 16px; }
+            nav .nav-inner { height: 48px; }
             nav .nav-links { gap: 6px; }
             nav .nav-links a { font-size: clamp(10px, 2.5vw, 11px); }
             nav .nav-links .nav-install { padding: 3px 8px; font-size: clamp(9px, 2.2vw, 10px); }
@@ -1210,9 +1141,7 @@
             .terminal-dot { width: 10px; height: 10px; }
             .term-blame-content .tag { min-width: 70px; font-size: 8px; padding: 0 3px; }
             .term-blame-gutter { font-size: 9px; min-width: 18px; }
-            .term-step { font-size: 9px; margin: 16px 0 4px; gap: 6px; }
-            .term-output-key { font-size: 10px; }
-            .term-legend { padding: 8px 12px; gap: 3px 8px; font-size: 9px; }
+
             .harness-pills { gap: 4px; }
             .harness-pill { font-size: clamp(9px, 2.2vw, 10px); padding: 2px 8px; }
             .harness-section .harness-label { gap: 6px; }
@@ -1240,6 +1169,9 @@
         @media (max-width: 360px) {
             .container { padding: 0 10px; }
             nav { padding: 0 10px; }
+            nav .nav-icon { height: 18px; }
+            nav .nav-wordmark { font-size: 14px; }
+            nav .nav-inner { height: 42px; }
             nav .nav-links { gap: 4px; }
             nav .nav-links a { font-size: 9px; }
             nav .nav-links .nav-install { padding: 2px 6px; font-size: 8px; }
@@ -1256,8 +1188,6 @@
             .terminal-body { padding: 10px; }
             .term-blame-content .tag { min-width: 60px; font-size: 7px; }
             .term-blame-gutter { font-size: 8px; min-width: 14px; padding-right: 2px; }
-            .term-legend { padding: 6px 10px; gap: 2px 6px; font-size: 8px; }
-            .term-step { font-size: 8px; margin: 12px 0 3px; }
             .cta-box { font-size: 9px; padding: 8px 10px; }
             .harness-pill { padding: 1px 6px; }
             .convention-card .card-header { padding: 10px 12px; font-size: 11px; }
@@ -1276,7 +1206,8 @@
     <nav>
         <div class="nav-inner">
             <a href="#" class="nav-brand">
-                <img src="img_assets/hero_logo.png" alt="Seshmark" class="nav-logo">
+                <img src="img_assets/favicon.png" alt="" class="nav-icon">
+                <span class="nav-wordmark">Seshmark</span>
             </a>
             <div class="nav-links">
                 <a href="#how-it-works" class="nav-link-text">How It Works</a>
@@ -1299,7 +1230,7 @@
             </div>
             <p class="tagline">Know <span class="highlight">which AI</span> wrote every line.</p>
 
-            <p class="hero-sub">Works out of the box with Cursor, Claude, Copilot, OpenCode, Pi and <a href="https://github.com/seshmark/seshmark/blob/main/ADD_A_HARNESS.md" class="hero-link">any AI harness</a>.</p>
+            <p class="hero-sub">Works out of the box with Codex, Cursor, Claude, Copilot, OpenCode, Pi and <a href="https://github.com/seshmark/seshmark/blob/main/ADD_A_HARNESS.md" class="hero-link">any AI harness in the universe</a>.</p>
 
             <div class="hero-install">
                 <div class="install-box" id="install-box">
@@ -1317,19 +1248,21 @@
     <!-- Terminal Demo -->
     <section class="demo-section">
         <div class="container">
-            <h2>See it in action</h2>
+            <div class="terminal-try">
+                <span class="terminal-prompt-icon">&gt;</span>
+                <span>Try it —</span>
+                <span class="terminal-try-cmd">git agentblame &lt;file&gt;</span>
+            </div>
             <div class="terminal">
                 <div class="terminal-header">
                     <div class="terminal-dot red"></div>
                     <div class="terminal-dot yellow"></div>
                     <div class="terminal-dot green"></div>
-                    <span style="margin-left: 12px; font-size: 12px; color: var(--text-muted); font-family: var(--font-sans);">@ src/auth.ts</span>
+                    <span style="margin-left: 12px; font-size: 12px; color: var(--text-muted); font-family: var(--font-sans);">zsh — src/auth.ts — 80×24</span>
                 </div>
                 <div class="terminal-body">
 
-                    <!-- Step 1: Blame -->
-                    <div class="term-step">Step 1 &nbsp;·&nbsp; See who wrote each line</div>
-                    <div class="term-line" style="margin-bottom: 8px;">
+                    <div class="term-line">
                         <span class="term-prompt">$</span> <span class="term-cmd">git agentblame src/auth.ts</span>
                     </div>
 
@@ -1340,11 +1273,11 @@
                         </div>
                         <div class="term-blame-line">
                             <span class="term-blame-gutter">2</span>
-                            <span class="term-blame-content"><span class="tag cursor">[cursor│abc123]</span> import { oauth } from './oauth';</span>
+                            <span class="term-blame-content"><span class="tag cursor">[cursor]</span> import { oauth } from './oauth';</span>
                         </div>
                         <div class="term-blame-line">
                             <span class="term-blame-gutter">3</span>
-                            <span class="term-blame-content"><span class="tag claude">[claude│xyz789]</span> function validateToken(token) {</span>
+                            <span class="term-blame-content"><span class="tag claude">[claude]</span> function validateToken(token) {</span>
                         </div>
                         <div class="term-blame-line">
                             <span class="term-blame-gutter">4</span>
@@ -1352,48 +1285,17 @@
                         </div>
                         <div class="term-blame-line">
                             <span class="term-blame-gutter">5</span>
-                            <span class="term-blame-content"><span class="tag cursor">[cursor│abc123]</span> &nbsp;&nbsp;const hash = crypto.sha256(token);</span>
+                            <span class="term-blame-content"><span class="tag cursor">[cursor]</span> &nbsp;&nbsp;const hash = crypto.sha256(token);</span>
                         </div>
                     </div>
 
-                    <!-- Step 2: Query -->
-                    <div class="term-step">Step 2 &nbsp;·&nbsp; Search by agent, model, or file</div>
-                    <div class="term-line" style="margin-bottom: 8px;">
-                        <span class="term-prompt">$</span> <span class="term-cmd">seshmark query --agent cursor --path auth</span>
-                    </div>
-
-                    <div class="term-output-grid">
-                        <span class="term-output-key">a3f9d2e</span>
-                        <span class="term-output-val"><span class="agent-cursor">cursor</span> · claude-sonnet · 2026-05-07 · feat: implement OAuth2</span>
-                        <span class="term-output-key">b7c4e1f</span>
-                        <span class="term-output-val"><span class="agent-cursor">cursor</span> · gpt-4o · 2026-05-08 · fix: token refresh</span>
-                    </div>
-
-                    <!-- Step 3: Resume -->
-                    <div class="term-step">Step 3 &nbsp;·&nbsp; Resume the exact AI session</div>
-                    <div class="term-line" style="margin-bottom: 8px;">
-                        <span class="term-prompt">$</span> <span class="term-cmd">seshmark resume a3f9d2e</span>
+                    <div class="term-line">
+                        <span class="term-prompt">$</span> <span class="term-cmd">seshmark resume HEAD</span>
                     </div>
                     <div class="term-line">
-                        <span class="term-dim">→ Resuming cursor:chat-abc123 ...</span>
+                        <span class="term-dim">→ Resuming cursor:chat-abc123 (claude-sonnet-4-20250514)</span><span class="term-cursor"></span>
                     </div>
 
-                </div>
-                <!-- Color legend -->
-                <div class="term-legend">
-                    <span class="term-legend-item">
-                        <span class="term-legend-dot human"></span>
-                        human
-                    </span>
-                    <span class="term-legend-item">
-                        <span class="term-legend-dot cursor"></span>
-                        cursor
-                    </span>
-                    <span class="term-legend-item">
-                        <span class="term-legend-dot claude"></span>
-                        claude
-                    </span>
-                    <span style="color: #484F58; margin-left: auto;">git agentblame · seshmark query · seshmark resume</span>
                 </div>
             </div>
         </div>

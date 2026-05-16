@@ -46,12 +46,19 @@ curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
 
 Works on macOS, Linux, and WSL. One command. No dependencies.
 
-## How It Works
+## How It Works — ✨ The Magic
 
-1. **Install** seshmark once. It adds a Git hook that auto-tags commits.
-2. **Use your AI tool normally.** Commits get stamped with `AI-Session`, `AI-Agent`, `AI-Model` trailers.
-3. **Or use branch naming.** A branch like `claude/auth-refactor` automatically tags commits with `AI-Agent: claude`.
-4. **Query later.** Find who wrote what, when, and with which session.
+1. **Install once.** Seshmark adds a silent Git hook. That's it. No config files. No daemons. No accounts.
+
+2. **Use your AI tools as you normally would.** Cursor, Claude Code, Copilot, Pi, Aider, OpenCode — any of them. Every commit gets invisibly stamped with `AI-Agent`, `AI-Session`, and `AI-Model` trailers. You won't even notice it happening.
+
+3. **Run `git agentblame` whenever you're curious.** Suddenly every line has a story. Which AI wrote it? What session? What model? It's all there.
+
+4. **Or dig deeper.** Query by agent, model, or file. Resume the exact session. Share stats with your team.
+
+Seshmark figures out which AI tool is running automatically — whether through environment variables, branch names, or process detection. You don't need to think about it. It just works.
+
+> *Curious how it actually works? See [`ADD_A_HARNESS.md`](ADD_A_HARNESS.md) for the technical details.*
 
 ## The Convention
 

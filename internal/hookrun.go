@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/seshmark/seshmark/internal/git"
@@ -21,6 +23,7 @@ type SessionState struct {
 var knownAgents = []string{
 	"cursor", "claude", "codex", "opencode", "aider",
 	"github-copilot", "devin", "swe-agent", "builder",
+	"pi",
 }
 
 func HookRun(msgFile, source string) error {
@@ -94,6 +97,12 @@ func resolveMetadata() (sessionID, agent, model string) {
 		}
 	}
 
+	// Priority 5: process-based detection (agent only)
+	// Check parent processes to detect the AI tool that's running
+	if a := detectAgentFromProcess(); a != "" {
+		return "", a, ""
+	}
+
 	return "", "", ""
 }
 
@@ -104,10 +113,130 @@ func extractAgentFromBranch(branch string) string {
 		return ""
 	}
 	prefix := strings.ToLower(matches[1])
-	for _, a := range knownAgents {
-		if a == prefix {
-			return a
+	// Skip common Git branch prefixes that aren't agents
+	skipPrefixes := map[string]bool{
+		"feature": true, "feat": true, "fix": true, "bugfix": true,
+		"hotfix": true, "release": true, "chore": true, "docs": true,
+		"refactor": true, "test": true, "main": true, "master": true,
+		"develop": true, "dev": true,
+	}
+	if skipPrefixes[prefix] {
+		return ""
+	}
+	return prefix
+}
+
+// detectAgentFromProcess walks the parent process tree looking for the
+// AI coding tool that invoked this commit. It works for any tool by
+// skipping known non-agent processes (git, shells, etc.) and returning
+// the first unknown parent process name as the agent.
+func detectAgentFromProcess() string {
+	ppid := os.Getppid()
+	if ppid <= 1 {
+		return ""
+	}
+
+	// Skip these process names — they're never the AI tool
+	skipProcesses := map[string]bool{
+		// Git and VCS
+		"git": true, "git2": true,
+		// Shells
+		"bash": true, "zsh": true, "sh": true, "dash": true,
+		"fish": true, "ksh": true, "tcsh": true,
+		// seshmark itself
+		"seshmark": true, "hook-run": true,
+		// Common languages that tools may be built with
+		"python": true, "python3": true, "node": true, "nodejs": true,
+		"deno": true, "bun": true,
+		// Package managers / build tools
+		"make": true, "npx": true, "npm": true, "yarn": true, "pnpm": true,
+		// Terminal/session (never the tool itself)
+		"login": true, "tmux": true, "screen": true,
+		// Editors — we want the AI, not the editor
+		"vim": true, "nvim": true, "emacs": true, "nano": true,
+	}
+
+	// Check if a process name might be an AI coding tool.
+	// It must NOT be in the skip list and must NOT be a system process.
+	isLikelyTool := func(name string) bool {
+		name = strings.TrimSpace(strings.ToLower(name))
+		if name == "" {
+			return false
+		}
+		if skipProcesses[name] {
+			return false
+		}
+		// Skip numbered exit codes from ps
+		if _, err := fmt.Sscanf(name, "%d", new(int)); err == nil {
+			return false
+		}
+		// Skip paths with common system dirs
+		if strings.HasPrefix(name, "/usr/lib/") ||
+			strings.HasPrefix(name, "/System/") ||
+			strings.HasPrefix(name, "/Applications/") {
+			return false
+		}
+		// Must have at least 2 chars to be meaningful
+		if len(name) < 2 {
+			return false
+		}
+		return true
+	}
+
+	// Walk up the process tree looking for the first non-skipped process
+	// We use a set to detect cycles
+	seen := map[int]bool{}
+	pid := ppid
+	for i := 0; i < 8; i++ {
+		if seen[pid] {
+			break
+		}
+		seen[pid] = true
+
+		name, err := getProcessName(pid)
+		if err != nil || name == "" {
+			break
+		}
+		name = strings.TrimSpace(strings.TrimSuffix(name, "\n"))
+		name = filepath.Base(name) // strip directory path
+
+		if isLikelyTool(name) {
+			return strings.ToLower(name)
+		}
+
+		// Walk up to parent
+		pid, err = getParentPid(pid)
+		if err != nil || pid <= 1 {
+			break
 		}
 	}
+
 	return ""
+}
+
+func getProcessName(pid int) (string, error) {
+	if runtime.GOOS == "windows" {
+		return "", nil
+	}
+	out, err := exec.Command("ps", "-o", "comm=", "-p", fmt.Sprintf("%d", pid)).Output()
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
+}
+
+func getParentPid(pid int) (int, error) {
+	if runtime.GOOS == "windows" {
+		return 0, fmt.Errorf("not supported")
+	}
+	out, err := exec.Command("ps", "-o", "ppid=", "-p", fmt.Sprintf("%d", pid)).Output()
+	if err != nil {
+		return 0, err
+	}
+	ppid := 0
+	fmt.Sscanf(string(out), "%d", &ppid)
+	if ppid <= 0 {
+		return 0, fmt.Errorf("no parent")
+	}
+	return ppid, nil
 }
