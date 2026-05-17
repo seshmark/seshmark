@@ -33,6 +33,7 @@ func init() {
 type queryResult struct {
 	Hash         string   `json:"hash"`
 	ShortHash    string   `json:"short_hash"`
+	Author       string   `json:"author"`
 	Date         string   `json:"date"`
 	Subject      string   `json:"subject"`
 	AISession    string   `json:"ai_session"`
@@ -74,6 +75,7 @@ func runQuery(cmd *cobra.Command, terms []string) error {
 		body, _ := git.Exec("log", "-1", "--format=%B", hash)
 		subj, _ := git.Exec("log", "-1", "--format=%s", hash)
 		date, _ := git.Exec("log", "-1", "--format=%ai", hash)
+		authorName, _ := git.Exec("log", "-1", "--format=%an", hash)
 
 		meta := parseTrailers(body)
 
@@ -124,6 +126,7 @@ func runQuery(cmd *cobra.Command, terms []string) error {
 		results = append(results, queryResult{
 			Hash:         hash,
 			ShortHash:    short,
+			Author:       strings.TrimSpace(authorName),
 			Date:         date,
 			Subject:      subj,
 			AISession:    meta["session"],
