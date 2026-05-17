@@ -2,6 +2,7 @@
 ╔══════════════════════════════════════════════════════╗
 ║  Seshmark - git agentblame                          ║
 ║  Know which AI wrote every line.                    ║
+║  Pi powered                                         ║
 ╚══════════════════════════════════════════════════════╝
 -->
 <p align="center">

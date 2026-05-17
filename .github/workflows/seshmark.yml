@@ -1,0 +1,16 @@
+name: Seshmark AI Report
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: seshmark/agentblame@v1
