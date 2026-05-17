@@ -199,15 +199,35 @@ Seshmark finds the right resolver script and opens the session in the native too
 
 ---
 
-## GitHub Action
+## GitHub Action — AI Reports on PRs
 
-Add AI attribution reports to every Pull Request:
+See the bigger picture. When you install the [Seshmark Agent Blame action](https://github.com/seshmark/agentblame) in your repo, every Pull Request gets an automated comment showing:
+
+- What percentage of the PR was written by AI vs humans
+- Which AI agents were used (Cursor, Claude, Copilot, Pi, etc.)
+- Which models generated the code
+- Which files have the most AI content
+
+**Add to your repo** — one file, no config:
 
 ```yaml
-- uses: seshmark/agentblame@v1
+# .github/workflows/seshmark.yml
+on: pull_request
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: seshmark/agentblame@v1
 ```
 
-See the [action repo](https://github.com/seshmark/agentblame) for full docs.
+The action reads the commit trailers your team's commits already have (from the CLI hook). No external services. No data leaves GitHub.
+
+**[View full docs &rarr;](https://github.com/seshmark/agentblame)**
 
 ---
 
