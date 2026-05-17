@@ -199,6 +199,18 @@ Seshmark finds the right resolver script and opens the session in the native too
 
 ---
 
+## GitHub Action
+
+Add AI attribution reports to every Pull Request:
+
+```yaml
+- uses: seshmark/agentblame@v1
+```
+
+See the [action repo](https://github.com/seshmark/agentblame) for full docs.
+
+---
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for:
