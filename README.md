@@ -90,6 +90,25 @@ Later, you can **blame**, **query**, and **resume** any AI session. No config fi
 
 ---
 
+## One-Minute Setup
+
+Give this prompt to any AI coding agent (Pi, Claude Code, Cursor, OpenCode) and it will set up Seshmark automatically:
+
+```
+Set up Seshmark (git agentblame) for me:
+
+1. Install: curl -fsSL https://seshmark.github.io/seshmark/install.sh | bash
+2. Load the Seshmark skill for my tool
+3. Before every git commit, set SESHMARK_SESSION_ID, SESHMARK_AGENT, SESHMARK_MODEL
+4. Verify with: seshmark who HEAD
+```
+
+The agent will install the CLI, load the behavior skill, and start tagging every commit with full metadata (session + agent + model).
+
+See [`SETUP_PROMPT.md`](SETUP_PROMPT.md) for per-tool instructions.
+
+---
+
 ## How It Works - The Magic
 
 1. **Install once.** Seshmark adds a silent Git hook. That's it.
