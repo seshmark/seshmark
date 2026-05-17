@@ -66,6 +66,15 @@ func runStats(cmd *cobra.Command) error {
 	}
 
 	if out == "" {
+		if format == "json" {
+			result := statsResult{
+				ByAgent: make(map[string]int),
+				ByModel: make(map[string]int),
+			}
+			data, _ := json.MarshalIndent(result, "", "  ")
+			fmt.Println(string(data))
+			return nil
+		}
 		fmt.Println("No commits found.")
 		return nil
 	}
